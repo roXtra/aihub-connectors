@@ -1,0 +1,31 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "build AiHub.Connector",
+      "type": "process",
+      "command": "dotnet",
+      "args": [
+        "build",
+        "${workspaceFolder}/roXtraAiHubM365Connector/AiHub.Connector/AiHub.Connector.csproj",
+        "-c",
+        "Debug"
+      ],
+      "problemMatcher": "$msCompile",
+      "group": "build"
+    },
+    {
+      "label": "test",
+      "type": "process",
+      "command": "dotnet",
+      "args": [
+        "test",
+        "${workspaceFolder}/AiHubConnectors.sln",
+        "-c",
+        "Debug",
+        "--no-build"
+      ],
+      "problemMatcher": "$msCompile"
+    }
+  ]
+}

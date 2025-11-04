@@ -1,0 +1,26 @@
+# /
+
+/*.psess
+/*.vspx
+/.git
+/_.git
+
+# Globally exclude obj and bin directories
+logs
+obj
+bin
+.vs
+
+*.xml
+*.bld
+*.props
+*.targets
+*.config
+*.user
+*.pdb
+*.v2
+*.suo
+
+.DS_Store
+
+PackagesReference
