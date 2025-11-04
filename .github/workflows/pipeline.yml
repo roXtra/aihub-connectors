@@ -1,0 +1,37 @@
+name: Pipeline
+
+on:
+  push:
+
+jobs:
+  build-test:
+    name: CSharpier Check, Build, Test
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+          cache: true
+          cache-dependency-path: |
+            **/*.csproj
+            global.json
+
+      - name: Restore .NET tools
+        run: dotnet tool restore
+
+      - name: Check formatting with CSharpier
+        run: dotnet csharpier check .
+
+      - name: Restore dependencies
+        run: dotnet restore AiHubConnectors.sln
+
+      - name: Build
+        run: dotnet build AiHubConnectors.sln --configuration Release --no-restore
+
+      - name: Test
+        run: dotnet test AiHubConnectors.sln --configuration Release --no-build
