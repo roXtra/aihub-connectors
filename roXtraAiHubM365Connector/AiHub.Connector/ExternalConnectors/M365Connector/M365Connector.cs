@@ -456,36 +456,25 @@ public class M365Connector : IExternalConnector
 		// Only add the member when an external group id was provided; it can be empty/null for roXtra groups that are not synchronized with Entra ID
 		if (!string.IsNullOrWhiteSpace(roXtraExternalGroupId))
 		{
-			if (_graphOptions.UseExternalGroupMembershipWorkaround)
+			var connectionId = _graphOptions.ExternalConnectionId;
+			try
+			{
+				var identity = new ConnectorIdentity
+				{
+					Id = roXtraExternalGroupId,
+					Type = IdentityType.Group,
+					IdentitySource = "azureActiveDirectory",
+				};
+				await _graph.AddMemberToExternalGroupAsync(connectionId, externalGroup.ExternalGroupId, identity, cancellationToken).ConfigureAwait(false);
+				_logger.LogInformation("Added member {MemberId} to external group {ExternalGroupId}", roXtraExternalGroupId, externalGroup.ExternalGroupId);
+			}
+			catch (ApiException ex) when (ex.ResponseStatusCode == 409)
 			{
 				_logger.LogInformation(
-					"Using workaround: skip adding member {MemberId} to external group {ExternalGroupId}; relying on ACL-based access.",
+					"Member {MemberId} already present in external group {ExternalGroupId}",
 					roXtraExternalGroupId,
 					externalGroup.ExternalGroupId
 				);
-			}
-			else
-			{
-				var connectionId = _graphOptions.ExternalConnectionId;
-				try
-				{
-					var identity = new ConnectorIdentity
-					{
-						Id = roXtraExternalGroupId,
-						Type = IdentityType.Group,
-						IdentitySource = "azureActiveDirectory",
-					};
-					await _graph.AddMemberToExternalGroupAsync(connectionId, externalGroup.ExternalGroupId, identity, cancellationToken).ConfigureAwait(false);
-					_logger.LogInformation("Added member {MemberId} to external group {ExternalGroupId}", roXtraExternalGroupId, externalGroup.ExternalGroupId);
-				}
-				catch (ApiException ex) when (ex.ResponseStatusCode == 409)
-				{
-					_logger.LogInformation(
-						"Member {MemberId} already present in external group {ExternalGroupId}",
-						roXtraExternalGroupId,
-						externalGroup.ExternalGroupId
-					);
-				}
 			}
 		}
 		else
@@ -533,33 +522,18 @@ public class M365Connector : IExternalConnector
 		var externalGroup = await EnsureExternalGroupAsync(knowledgePoolId, cancellationToken).ConfigureAwait(false);
 
 		var connectionId = _graphOptions.ExternalConnectionId;
-		if (_graphOptions.UseExternalGroupMembershipWorkaround)
+		try
 		{
-			_logger.LogInformation(
-				"Using workaround: skip removing member {MemberId} from external group {ExternalGroupId}; access is managed via item ACLs.",
-				externalGroupId,
-				externalGroup.ExternalGroupId
-			);
+			await _graph
+				.RemoveMemberFromExternalGroupAsync(connectionId, externalGroup.ExternalGroupId, externalGroupId, cancellationToken)
+				.ConfigureAwait(false);
+			_logger.LogInformation("Removed member {MemberId} from external group {ExternalGroupId}", externalGroupId, externalGroup.ExternalGroupId);
 		}
-		else
+		catch (ApiException ex) when (ex.ResponseStatusCode == 404)
 		{
-			try
-			{
-				await _graph
-					.RemoveMemberFromExternalGroupAsync(connectionId, externalGroup.ExternalGroupId, externalGroupId, cancellationToken)
-					.ConfigureAwait(false);
-				_logger.LogInformation("Removed member {MemberId} from external group {ExternalGroupId}", externalGroupId, externalGroup.ExternalGroupId);
-			}
-			catch (ApiException ex) when (ex.ResponseStatusCode == 404)
-			{
-				_logger.LogError(
-					"Member {MemberId} not found in external group {ExternalGroupId} during removal",
-					externalGroupId,
-					externalGroup.ExternalGroupId
-				);
-				// Rethrow this error so that the caller can handle it if needed - perhaps we lost a member add event that will be retried later
-				throw;
-			}
+			_logger.LogError("Member {MemberId} not found in external group {ExternalGroupId} during removal", externalGroupId, externalGroup.ExternalGroupId);
+			// Rethrow this error so that the caller can handle it if needed - perhaps we lost a member add event that will be retried later
+			throw;
 		}
 	}
 
@@ -752,18 +726,6 @@ public class M365Connector : IExternalConnector
 
 		// Build initial ACL
 		var acl = new List<Acl>();
-		if (_graphOptions.UseExternalGroupMembershipWorkaround)
-		{
-			// Grant Everyone when workaround is enabled
-			acl.Add(
-				new Acl
-				{
-					Type = AclType.Everyone,
-					AccessType = AccessType.Grant,
-					Value = Guid.NewGuid().ToString(),
-				}
-			);
-		}
 		acl.Add(
 			new Acl
 			{
@@ -939,77 +901,29 @@ public class M365Connector : IExternalConnector
 		item.Id = itemId; // ensure id present
 		var acl = item.Acl?.ToList() ?? [];
 
-		if (_graphOptions.UseExternalGroupMembershipWorkaround)
+		// Ensure the external group ACL is present
+		bool alreadyPresent = acl.Any(a =>
+			a.Type == AclType.ExternalGroup && string.Equals(a.Value, externalGroupId, StringComparison.OrdinalIgnoreCase) && a.AccessType == AccessType.Grant
+		);
+		if (!alreadyPresent)
 		{
-			// Workaround path: ensure Everyone and the external group ACL are present
-			bool hasEveryone = acl.Any(a => a.Type == AclType.Everyone);
-			if (!hasEveryone)
-			{
-				acl.Add(
-					new Acl
-					{
-						Type = AclType.Everyone,
-						AccessType = AccessType.Grant,
-						Value = Guid.NewGuid().ToString(),
-					}
-				);
-			}
-
-			bool hasExternalGroup = acl.Any(a =>
-				a.Type == AclType.ExternalGroup
-				&& string.Equals(a.Value, externalGroupId, StringComparison.OrdinalIgnoreCase)
-				&& a.AccessType == AccessType.Grant
+			acl.Add(
+				new Acl
+				{
+					Type = AclType.ExternalGroup,
+					Value = externalGroupId,
+					AccessType = AccessType.Grant,
+				}
 			);
-			if (!hasExternalGroup)
-			{
-				acl.Add(
-					new Acl
-					{
-						Type = AclType.ExternalGroup,
-						Value = externalGroupId,
-						AccessType = AccessType.Grant,
-					}
-				);
-			}
-
-			if (hasEveryone && hasExternalGroup)
-			{
-				_logger.LogInformation(
-					"ACL for external item {ItemId} already contains Everyone and external group {ExternalGroupId}; no update needed.",
-					itemId,
-					externalGroupId
-				);
-				return;
-			}
 		}
 		else
 		{
-			// Normal path: ensure the external group ACL is present
-			bool alreadyPresent = acl.Any(a =>
-				a.Type == AclType.ExternalGroup
-				&& string.Equals(a.Value, externalGroupId, StringComparison.OrdinalIgnoreCase)
-				&& a.AccessType == AccessType.Grant
+			_logger.LogInformation(
+				"ACL for external item {ItemId} already contains external group {ExternalGroupId}; no update needed.",
+				itemId,
+				externalGroupId
 			);
-			if (!alreadyPresent)
-			{
-				acl.Add(
-					new Acl
-					{
-						Type = AclType.ExternalGroup,
-						Value = externalGroupId,
-						AccessType = AccessType.Grant,
-					}
-				);
-			}
-			else
-			{
-				_logger.LogInformation(
-					"ACL for external item {ItemId} already contains external group {ExternalGroupId}; no update needed.",
-					itemId,
-					externalGroupId
-				);
-				return;
-			}
+			return;
 		}
 		// Update ACL and knowledgePoolIds property to include the new pool
 		var kpIds = _db.FileKnowledgePools.Where(x => x.RoxFileId == roxFileId).Select(x => x.KnowledgePoolId).ToList();

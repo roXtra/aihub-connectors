@@ -70,7 +70,7 @@ public class M365ConnectorTests
 		var graph = new Mock<IGraphExternalClient>(MockBehavior.Strict);
 		var logger = Mock.Of<ILogger<M365Connector>>();
 		var pdf = new Mock<IPdfTextExtractor>(MockBehavior.Strict);
-		_ = pdf.Setup(p => p.ExtractAsync(It.IsAny<System.IO.Stream>(), It.IsAny<CancellationToken>())).ReturnsAsync(string.Empty);
+		_ = pdf.Setup(p => p.ExtractAsync(It.IsAny<Stream>(), It.IsAny<CancellationToken>())).ReturnsAsync(string.Empty);
 		var gopts = Options.Create(
 			new GraphOptions
 			{
@@ -78,28 +78,6 @@ public class M365ConnectorTests
 				TenantId = "t",
 				ClientId = "c",
 				ClientSecret = "s",
-			}
-		);
-		var ropts = Options.Create(new RoxtraOptions { RoxtraUrl = "https://roxtra.example.com" });
-		var sut = new M365Connector(logger, db, graph.Object, gopts, ropts, pdf.Object);
-		return (sut, graph, db);
-	}
-
-	private static (M365Connector sut, Mock<IGraphExternalClient> graph, ConnectorDbContext db) CreateSut(bool useWorkaround)
-	{
-		var db = CreateDb();
-		var graph = new Mock<IGraphExternalClient>(MockBehavior.Strict);
-		var logger = Mock.Of<ILogger<M365Connector>>();
-		var pdf = new Mock<IPdfTextExtractor>(MockBehavior.Strict);
-		_ = pdf.Setup(p => p.ExtractAsync(It.IsAny<System.IO.Stream>(), It.IsAny<CancellationToken>())).ReturnsAsync(string.Empty);
-		var gopts = Options.Create(
-			new GraphOptions
-			{
-				ExternalConnectionId = "conn-1",
-				TenantId = "t",
-				ClientId = "c",
-				ClientSecret = "s",
-				UseExternalGroupMembershipWorkaround = useWorkaround,
 			}
 		);
 		var ropts = Options.Create(new RoxtraOptions { RoxtraUrl = "https://roxtra.example.com" });
@@ -143,7 +121,7 @@ public class M365ConnectorTests
 			.Callback<string, string, ExternalItem, Schema, CancellationToken>((cid, id, item, schema, ct) => captured = item)
 			.Returns(Task.CompletedTask);
 
-		var file = new RoxFile("file-42", "Doc.txt") { ContentStream = new System.IO.MemoryStream(new byte[] { 65, 66 }) };
+		var file = new RoxFile("file-42", "Doc.txt") { ContentStream = new MemoryStream([65, 66]) };
 		await sut.HandleKnowledgePoolFileAddedAsync("kp-99", file, CancellationToken.None);
 
 		Assert.NotNull(captured);
@@ -152,66 +130,10 @@ public class M365ConnectorTests
 		Assert.True(db.ExternalFiles.Any(f => f.RoxFileId == "file-42"));
 	}
 
-	[Theory]
-	[InlineData(true, true)]
-	[InlineData(false, false)]
-	public async Task HandleKnowledgePoolFileAdded_MergesAcl_DependsOnWorkaround(bool useWorkaround, bool expectEveryone)
-	{
-		var (sut, graph, db) = CreateSut(useWorkaround);
-		await using var dbScope = db;
-		// Connection/schema exist and ensure group creation path
-		SetupConnectionAndSchema(graph);
-		SetupCreateExternalGroup(graph);
-
-		// Existing mapping indicates the item already exists in Graph
-		_ = db.ExternalFiles.Add(new Data.Entities.ExternalFileEntity { RoxFileId = "file-42", ExternalItemId = "roXtraFilefile-42" });
-		_ = await db.SaveChangesAsync();
-
-		// Graph returns existing item with one ACL entry
-		var existing = new ExternalItem
-		{
-			Id = "roXtraFilefile-42",
-			Acl =
-			[
-				new Acl
-				{
-					Type = AclType.ExternalGroup,
-					Value = "existing-group",
-					AccessType = AccessType.Grant,
-				},
-			],
-			Content = new ExternalItemContent { Type = ExternalItemContentType.Text, Value = "abc" },
-			Properties = new Properties { AdditionalData = new Dictionary<string, object> { ["title"] = "Doc.txt" } },
-		};
-		SetupGetItem(graph, "roXtraFilefile-42", existing);
-
-		ExternalItem? patched = null;
-		_ = graph
-			.Setup(g => g.UpsertItemAsync("conn-1", "roXtraFilefile-42", It.IsAny<ExternalItem>(), It.IsAny<Schema>(), It.IsAny<CancellationToken>()))
-			.Callback<string, string, ExternalItem, Schema, CancellationToken>((cid, id, item, schema, ct) => patched = item)
-			.Returns(Task.CompletedTask);
-
-		var file = new RoxFile("file-42", "Doc.txt") { ContentStream = new System.IO.MemoryStream(new byte[] { 65, 66 }) };
-		await sut.HandleKnowledgePoolFileAddedAsync("kp-99", file, CancellationToken.None);
-
-		Assert.NotNull(patched);
-		Assert.NotNull(patched!.Acl);
-		Assert.Contains(patched!.Acl!, a => a.Value == "existing-group");
-		Assert.Contains(patched!.Acl!, a => a.Value == "roXtraKpkp99");
-		if (expectEveryone)
-		{
-			Assert.Contains(patched!.Acl!, a => a.Type == AclType.Everyone);
-		}
-		else
-		{
-			Assert.DoesNotContain(patched!.Acl!, a => a.Type == AclType.Everyone);
-		}
-	}
-
 	[Fact]
-	public async Task HandleKnowledgePoolFileAdded_MergesAcl_NoEveryone_WhenWorkaroundDisabled()
+	public async Task HandleKnowledgePoolFileAdded_MergesAcl()
 	{
-		var (sut, graph, db) = CreateSut(false);
+		var (sut, graph, db) = CreateSut();
 		await using var dbScope = db;
 		SetupConnectionAndSchema(graph);
 		SetupCreateExternalGroup(graph);
@@ -244,7 +166,7 @@ public class M365ConnectorTests
 			.Callback<string, string, ExternalItem, Schema, CancellationToken>((cid, id, item, schema, ct) => patched = item)
 			.Returns(Task.CompletedTask);
 
-		var file = new RoxFile("file-98", "Doc.txt") { ContentStream = new System.IO.MemoryStream(new byte[] { 65, 66 }) };
+		var file = new RoxFile("file-98", "Doc.txt") { ContentStream = new MemoryStream([65, 66]) };
 		await sut.HandleKnowledgePoolFileAddedAsync("kp-98", file, CancellationToken.None);
 
 		Assert.NotNull(patched);
@@ -254,12 +176,10 @@ public class M365ConnectorTests
 		Assert.DoesNotContain(patched!.Acl!, a => a.Type == AclType.Everyone);
 	}
 
-	[Theory]
-	[InlineData(true, 0)]
-	[InlineData(false, 1)]
-	public async Task HandleKnowledgePoolMemberAdded_WithGroupId_Parameterized(bool useWorkaround, int expectedAddCalls)
+	[Fact]
+	public async Task HandleKnowledgePoolMemberAdded_WithGroupId_AddsMember()
 	{
-		var (sut, graph, db) = CreateSut(useWorkaround);
+		var (sut, graph, db) = CreateSut();
 		await using var dbScope = db;
 		SetupConnectionAndSchema(graph);
 		SetupCreateExternalGroup(graph);
@@ -278,16 +198,14 @@ public class M365ConnectorTests
 					It.Is<ConnectorIdentity>(i => i.Id == "aad-group-1" && i.Type == IdentityType.Group && i.IdentitySource == "azureActiveDirectory"),
 					It.IsAny<CancellationToken>()
 				),
-			Times.Exactly(expectedAddCalls)
+			Times.Exactly(1)
 		);
 	}
 
-	[Theory]
-	[InlineData(true, 0)]
-	[InlineData(false, 1)]
-	public async Task HandleKnowledgePoolMemberRemoved_Parameterized(bool useWorkaround, int expectedRemoveCalls)
+	[Fact]
+	public async Task HandleKnowledgePoolMemberRemoved_RemovesMember()
 	{
-		var (sut, graph, db) = CreateSut(useWorkaround);
+		var (sut, graph, db) = CreateSut();
 		await using var dbScope = db;
 		SetupConnectionAndSchema(graph);
 		SetupCreateExternalGroup(graph);
@@ -298,18 +216,13 @@ public class M365ConnectorTests
 
 		await sut.HandleKnowledgePoolMemberRemovedAsync("kp-remove", System.Guid.NewGuid(), "aad-group-2", CancellationToken.None);
 
-		graph.Verify(
-			g => g.RemoveMemberFromExternalGroupAsync("conn-1", "roXtraKpkpremove", "aad-group-2", It.IsAny<CancellationToken>()),
-			Times.Exactly(expectedRemoveCalls)
-		);
+		graph.Verify(g => g.RemoveMemberFromExternalGroupAsync("conn-1", "roXtraKpkpremove", "aad-group-2", It.IsAny<CancellationToken>()), Times.Exactly(1));
 	}
 
-	[Theory]
-	[InlineData(true, true)]
-	[InlineData(false, false)]
-	public async Task HandleKnowledgePoolFileAdded_CreatesItem_Parameterized(bool useWorkaround, bool expectEveryone)
+	[Fact]
+	public async Task HandleKnowledgePoolFileAdded_CreatesItem()
 	{
-		var (sut, graph, db) = CreateSut(useWorkaround);
+		var (sut, graph, db) = CreateSut();
 		await using var dbScope = db;
 		SetupConnectionAndSchema(graph);
 		SetupCreateExternalGroup(graph);
@@ -321,19 +234,12 @@ public class M365ConnectorTests
 			.Callback<string, string, ExternalItem, Schema, CancellationToken>((cid, id, item, schema, ct) => created = item)
 			.Returns(Task.CompletedTask);
 
-		var file = new RoxFile("file-55", "Doc55.txt") { ContentStream = new System.IO.MemoryStream(new byte[] { 1, 2 }) };
+		var file = new RoxFile("file-55", "Doc55.txt") { ContentStream = new MemoryStream([1, 2]) };
 		await sut.HandleKnowledgePoolFileAddedAsync("kp-55", file, CancellationToken.None);
 
 		Assert.NotNull(created);
 		Assert.NotNull(created!.Acl);
-		if (expectEveryone)
-		{
-			Assert.Contains(created!.Acl!, a => a.Type == AclType.Everyone);
-		}
-		else
-		{
-			Assert.DoesNotContain(created!.Acl!, a => a.Type == AclType.Everyone);
-		}
+		Assert.DoesNotContain(created!.Acl!, a => a.Type == AclType.Everyone);
 		Assert.Contains(created!.Acl!, a => a.Type == AclType.ExternalGroup && a.Value == "roXtraKpkp55");
 	}
 
@@ -586,7 +492,7 @@ public class M365ConnectorTests
 			.Callback<string, string, ExternalItem, Schema, CancellationToken>((cid, id, item, schema, ct) => upserted = item)
 			.Returns(Task.CompletedTask);
 
-		var file = new Roxtra.RoxFile("file-7", "New.pdf") { ContentStream = new System.IO.MemoryStream(new byte[] { 0x25, 0x50 }) };
+		var file = new Roxtra.RoxFile("file-7", "New.pdf") { ContentStream = new MemoryStream([0x25, 0x50]) };
 		await sut.HandleFileUpdatedAsync(file, CancellationToken.None);
 
 		Assert.NotNull(upserted);
@@ -618,7 +524,7 @@ public class M365ConnectorTests
 			.Callback<string, string, ExternalItem, Schema, CancellationToken>((cid, id, item, schema, ct) => created = item)
 			.Returns(Task.CompletedTask);
 
-		var file = new Roxtra.RoxFile("file-8", "New.pdf") { ContentStream = new System.IO.MemoryStream(new byte[] { 0x25, 0x50 }) };
+		var file = new Roxtra.RoxFile("file-8", "New.pdf") { ContentStream = new MemoryStream([0x25, 0x50]) };
 		await sut.HandleFileUpdatedAsync(file, CancellationToken.None);
 
 		Assert.NotNull(created);
