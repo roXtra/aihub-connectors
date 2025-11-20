@@ -61,25 +61,12 @@ The `Graph` section must match the Azure app that you created.
 - After saving, start the service: `Start-Service roXtraAiHubM365Connector`.
 - Logs are written to `Logs/roXtraAiHubConnector.log` (under the install directory).
 
-## Wire roXtra AiHub service
-- Configure roXtra to call the connector's webhook endpoint by creating/editing `%RoxtraInstallDir%\config\service.aihub.custom.json` with e.g.:
+## Connect roXtra AiHub service
 
-```
-{
-  "AiHubConnectorWebhooks": {
-    "Webhooks": [
-      {
-        "Name": "M365Connector",
-        "Enabled": true,
-        "BaseUrl": "http://localhost:5254",
-        "ApiKey": "CHANGE_ME",
-        "TimeoutSeconds": 300
-      }
-    ]
-  }
-}
-```
+The connection between roXtra AiHub and the external connector is configured by the Roxtra GmbH. To have your knowledge pools synced, please contact roXtra support or your roXtra contact person to set up the connection.  
 
-- Adjust `BaseUrl` to the connector's reachable URL (http://localhost:5254 is the default, if it was not changed) and set a secure `ApiKey` that matches `Webhooks:ApiKey` in `appsettings.Production.json`.
- 
-- Restart the roXtra service that hosts AiHub to begin syncing knowledge pools.
+When requesting the connection setup, please provide the following details:
+
+- The connector's webhook URL: `https://<your-host>:<your-port>`
+
+- The `ApiKey` you set in `appsettings.Production.json`
