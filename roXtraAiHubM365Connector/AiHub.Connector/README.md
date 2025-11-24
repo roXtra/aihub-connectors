@@ -61,6 +61,47 @@ The `Graph` section must match the Azure app that you created.
 - After saving, start the service: `Start-Service roXtraAiHubM365Connector`.
 - Logs are written to `Logs/roXtraAiHubConnector.log` (under the install directory).
 
+## Configure `Search` with the new connector
+
+The external connector will register itself after starting the service. You can verify this in the Microsoft 365 admin center:
+- Go to `Copilot` -> `Connectors` -> `Your Connections`  
+
+![M365 Connectors](../docs/images/m365admin-connectors.png)
+
+- Select the `roXtra AiHub Connector` to see details. Make sure that `Connection state` is `Ready`.
+- To enable search and Copilot access, go to `Copilot Visibility` and enable the option.
+
+![M365 Connectors Copilot visibility](../docs/images/m365admin-connectors-copilot-visibility.png)
+
+- For the search to work, a `Vertical` must be created. Go to `Search & Intelligence` -> `Verticals` and add a new vertical.
+
+![M365 Search Verticals](../docs/images/m365admin-search-verticals-add-1.png)
+
+- Start by setting the `Name`.
+
+![M365 Search Verticals](../docs/images/m365admin-search-verticals-add-2-name.png)
+
+- Then, select `Connectors` and add the `roXtra AiHub Connector`.
+
+![M365 Search Verticals](../docs/images/m365admin-search-verticals-add-3-source.png)
+
+- (Optional) add a `KQL Query` to filter the results if needed.
+
+![M365 Search Verticals](../docs/images/m365admin-search-verticals-add-4-query.png)
+
+- (Optional) add `Filters`.
+
+![M365 Search Verticals](../docs/images/m365admin-search-verticals-add-5-filters.png)
+
+- Review and create the vertical.
+
+![M365 Search Verticals](../docs/images/m365admin-search-verticals-add-6-review.png)
+
+- Enable the vertical after creation.
+
+![M365 Search Verticals](../docs/images/m365admin-search-verticals-add-7-enable.png)
+
+
 ## Connect roXtra AiHub service
 
 The connection between roXtra AiHub and the external connector is configured by the Roxtra GmbH. To have your knowledge pools synced, please contact roXtra support or your roXtra contact person to set up the connection.  
