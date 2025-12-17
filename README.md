@@ -5,6 +5,9 @@ This repository demonstrates how to connect roXtra Knowledge Pools to an externa
 The included sample targets Microsoft 365 Graph External Connections, but the pattern is generic and easy to adapt to any external system.
 
 ## How It Works
+
+![m365 sample connector](/roXtraAiHubM365Connector/docs/images/ai-hub-sample-m365-connector.svg)
+
 - roXtra AI Hub sends events to the connector’s webhook: `POST /api/v1/webhooks/events/receive`.
 - Webhook events and payloads: see [Events.md](Events.md)
 - Configure/install the sample connector: see [roXtraAiHubM365Connector/AiHub.Connector/README.md](roXtraAiHubM365Connector/AiHub.Connector/README.md)
