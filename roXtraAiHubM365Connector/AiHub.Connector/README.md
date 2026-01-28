@@ -10,9 +10,10 @@
 - Delete the extracted folder after installation if needed
 
 ## Create Azure App
-- Go to the [Azure Portal](https://portal.azure.com) and create a new `App Registration`
-- Note down the `Application (client) ID` and `Directory (tenant) ID`
-- A secret is either created during app registration or under `Certificates & secrets` -> `New client secret`. Note down the secret value.
+- Go to the [Azure Portal](https://portal.azure.com) and create a new `App Registrations`
+- Select `Accounts in this organizational directory only (Single tenant)` and click `Register`
+- Go to `Certificates & secrets`
+- Create a new `Client secret` and copy the value (you'll need it later)
 - Go to `API permissions`
 - Add the following permissions:
   - `ExternalItems.ReadWrite.OwnedBy`
