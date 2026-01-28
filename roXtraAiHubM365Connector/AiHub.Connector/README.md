@@ -1,9 +1,23 @@
 # roXtra AI Hub M365 Connector - Quick Install
 
 ## Install
-- From the extracted release ZIP folder (run PowerShell as Administrator):
+- Install [.NET 10 Hosting Bundle](https://builds.dotnet.microsoft.com/dotnet/aspnetcore/Runtime/10.0.2/dotnet-hosting-10.0.2-win.exe)
+- Download the [latest](https://github.com/roXtra/aihub-connectors/releases/latest) release ZIP and extract it
+- Open PowerShell as Administrator in the extracted folder and run:
   `pwsh -File .\setup.ps1`
 - If the service exists, you'll be prompted to replace it.
+- The service will be installed in `C:\Program Files\roXtraAiHubM365Connector` by default
+- Delete the extracted folder after installation if needed
+
+## Create Azure App
+- Go to the [Azure Portal](https://portal.azure.com) and create a new `App Registration`
+- Note down the `Application (client) ID` and `Directory (tenant) ID`
+- A secret is either created during app registration or under `Certificates & secrets` -> `New client secret`. Note down the secret value.
+- Go to `API permissions`
+- Add the following permissions:
+  - `ExternalItems.ReadWrite.OwnedBy`
+  - `ExternalConnections.ReadWrite.OwnedBy`
+- Click `Grant admin consent for <your-tenant>` and confirm
 
 ## Configure
 - Create `appsettings.Production.json` in the install directory (e.g., `C:\Program Files\roXtraAiHubM365Connector`).
@@ -30,6 +44,10 @@
 ```
 
 The `Graph` section must match the Azure app that you created.
+- `TenantId`: Your Azure AD tenant ID
+- `ClientId`: The Application (client) ID of the registered app
+- `ClientSecret`: The client secret value you generated
+- `ExternalConnectionId`: The ID of the external connection that will be created. Should not contain spaces or special characters (e.g., `roXtraAiHubConnector`)
 
 - Optional: HTTP binding (host/port) — copy the `Kestrel` section from `appsettings.json` into `appsettings.Production.json` and adjust if you need a different host/port, e.g.:
 
