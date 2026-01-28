@@ -87,7 +87,7 @@ The external connector will register itself after starting the service. You can 
 ![M365 Connectors](../docs/images/m365admin-connectors.png)
 
 - Select the `roXtra AiHub Connector` to see details. Make sure that `Connection state` is `Ready`.
-- To enable search and Copilot access, go to `Copilot Visibility` and enable the option.
+- (optional) To enable search in Copilot, go to `Copilot Visibility` and enable the option.
 
 ![M365 Connectors Copilot visibility](../docs/images/m365admin-connectors-copilot-visibility.png)
 
