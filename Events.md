@@ -1,3 +1,8 @@
+# Webhook Events
+
+The following webhook events are sent by roXtra AI Hub to the connector endpoint `POST /api/v1/webhooks/events/receive`.  
+Events related to documents are only sent if the document is released and is either a PDF or contains a PDF attachment. Other document types are ignored.
+
 ```mermaid
 flowchart LR
     event((knowledgepool.created)) --> createExternalGroup(create external group in connector)
