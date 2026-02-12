@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
+using Shouldly;
 using Xunit;
 
 namespace AiHub.Connector.Tests;
@@ -105,8 +106,8 @@ public class WebhookHandlerTests
 
 		var result = await handler.HandleAsync(payload, req, CancellationToken.None);
 
-		Assert.NotNull(result);
-		Assert.Equal(0, counting.Calls);
+		result.ShouldNotBeNull();
+		counting.Calls.ShouldBe(0);
 		external.VerifyAll();
 	}
 
@@ -146,7 +147,7 @@ public class WebhookHandlerTests
 		var result = await handler.HandleAsync(payload, req, CancellationToken.None);
 
 		external.VerifyAll();
-		Assert.NotNull(result);
+		result.ShouldNotBeNull();
 	}
 
 	[Fact]
@@ -176,7 +177,7 @@ public class WebhookHandlerTests
 		var result = await handler.HandleAsync(payload, req, CancellationToken.None);
 
 		external.VerifyAll();
-		Assert.NotNull(result);
+		result.ShouldNotBeNull();
 	}
 
 	[Fact]
@@ -190,7 +191,7 @@ public class WebhookHandlerTests
 		var result = await handler.HandleAsync(payload, req, CancellationToken.None);
 
 		external.VerifyAll();
-		Assert.NotNull(result);
+		result.ShouldNotBeNull();
 	}
 
 	[Fact]
@@ -219,7 +220,7 @@ public class WebhookHandlerTests
 		var result = await handler.HandleAsync(payload, req, CancellationToken.None);
 
 		external.VerifyAll();
-		Assert.NotNull(result);
+		result.ShouldNotBeNull();
 	}
 
 	[Fact]
@@ -245,7 +246,7 @@ public class WebhookHandlerTests
 		var result = await handler.HandleAsync(payload, req, CancellationToken.None);
 
 		external.VerifyAll();
-		Assert.NotNull(result);
+		result.ShouldNotBeNull();
 	}
 
 	[Fact]
@@ -259,7 +260,7 @@ public class WebhookHandlerTests
 		var result = await handler.HandleAsync(payload, req, CancellationToken.None);
 
 		external.VerifyAll();
-		Assert.NotNull(result);
+		result.ShouldNotBeNull();
 	}
 
 	[Fact]
@@ -273,7 +274,7 @@ public class WebhookHandlerTests
 		var result = await handler.HandleAsync(payload, req, CancellationToken.None);
 
 		external.VerifyAll();
-		Assert.NotNull(result);
+		result.ShouldNotBeNull();
 	}
 
 	[Fact]
@@ -292,7 +293,7 @@ public class WebhookHandlerTests
 		);
 
 		var result = await handler.HandleAsync(payload, req, CancellationToken.None);
-		Assert.NotNull(result);
+		result.ShouldNotBeNull();
 	}
 
 	[Fact]
@@ -311,8 +312,8 @@ public class WebhookHandlerTests
 		);
 
 		var result = await handler.HandleAsync(payload, req, CancellationToken.None);
-		var statusResult = Assert.IsAssignableFrom<IStatusCodeHttpResult>(result);
-		Assert.Equal(StatusCodes.Status401Unauthorized, statusResult.StatusCode);
+		IStatusCodeHttpResult statusResult = result.ShouldBeAssignableTo<IStatusCodeHttpResult>().ShouldNotBeNull();
+		statusResult.StatusCode.ShouldBe(StatusCodes.Status401Unauthorized);
 	}
 
 	[Fact]
@@ -331,8 +332,8 @@ public class WebhookHandlerTests
 		);
 
 		var result = await handler.HandleAsync(payload, req, CancellationToken.None);
-		var statusResult = Assert.IsAssignableFrom<IStatusCodeHttpResult>(result);
-		Assert.Equal(StatusCodes.Status404NotFound, statusResult.StatusCode);
+		IStatusCodeHttpResult statusResult = result.ShouldBeAssignableTo<IStatusCodeHttpResult>().ShouldNotBeNull();
+		statusResult.StatusCode.ShouldBe(StatusCodes.Status404NotFound);
 	}
 
 	[Fact]
@@ -356,7 +357,7 @@ public class WebhookHandlerTests
 		var result = await handler.HandleAsync(payload, req, CancellationToken.None);
 
 		external.VerifyAll();
-		Assert.NotNull(result);
+		result.ShouldNotBeNull();
 	}
 
 	[Fact]
@@ -380,13 +381,13 @@ public class WebhookHandlerTests
 		var result = await handler.HandleAsync(payload, req, CancellationToken.None);
 
 		external.VerifyAll();
-		Assert.NotNull(result);
+		result.ShouldNotBeNull();
 	}
 
 	[Fact]
 	public async Task FileAdded_When_DownloadUrl_NotFromRoxtra_ReturnsSecurityError()
 	{
-		var handler = CreateHandler(out var external);
+		var handler = CreateHandler(out var _);
 
 		var (payload, req) = MakeRequest(
 			"{"
@@ -399,7 +400,7 @@ public class WebhookHandlerTests
 
 		var result = await handler.HandleAsync(payload, req, CancellationToken.None);
 
-		var statusResult = Assert.IsAssignableFrom<IStatusCodeHttpResult>(result);
-		Assert.Equal(StatusCodes.Status403Forbidden, statusResult.StatusCode);
+		IStatusCodeHttpResult statusResult = result.ShouldBeAssignableTo<IStatusCodeHttpResult>().ShouldNotBeNull();
+		statusResult.StatusCode.ShouldBe(StatusCodes.Status403Forbidden);
 	}
 }

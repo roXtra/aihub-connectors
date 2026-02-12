@@ -16,7 +16,7 @@
 			<PrivateAssets>all</PrivateAssets>
 		</PackageReference>
 		<PackageReference Include="Moq" Version="4.20.72" />
-		<PackageReference Include="FluentAssertions" Version="8.8.0" />
+		<PackageReference Include="Shouldly" Version="4.3.0" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="9.0.10" />
 		<PackageReference Include="Microsoft.Graph" Version="5.95.0" />
 		<PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="9.0.10" />

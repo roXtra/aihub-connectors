@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Shouldly;
 using Xunit;
 
 namespace AiHub.Connector.Tests.Integration;
@@ -36,7 +37,7 @@ public class ApiKeyAuthTests : WebApplicationFactory<Program>
 		var client = CreateClient();
 		var body = Json("{\"type\":\"knowledgepool.created\",\"knowledgePoolId\":\"kp-x\"}");
 		var resp = await client.PostAsync("/api/v1/webhooks/events/receive", body);
-		Assert.Equal(HttpStatusCode.Unauthorized, resp.StatusCode);
+		resp.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
 	}
 
 	[Fact]
@@ -46,7 +47,7 @@ public class ApiKeyAuthTests : WebApplicationFactory<Program>
 		client.DefaultRequestHeaders.Add("X-Api-Key", "not-the-secret");
 		var body = Json("{\"type\":\"knowledgepool.created\",\"knowledgePoolId\":\"kp-x\"}");
 		var resp = await client.PostAsync("/api/v1/webhooks/events/receive", body);
-		Assert.Equal(HttpStatusCode.Unauthorized, resp.StatusCode);
+		resp.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
 	}
 
 	// Success path is verified indirectly by unit tests of WebhookHandler and connectors.
