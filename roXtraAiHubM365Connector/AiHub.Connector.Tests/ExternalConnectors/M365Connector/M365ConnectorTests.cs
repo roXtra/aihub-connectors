@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Graph.Models.ExternalConnectors;
 using Moq;
+using Shouldly;
 using Xunit;
 
 namespace AiHub.Connector.Tests;
@@ -99,7 +100,7 @@ public class M365ConnectorTests
 		await sut.HandleKnowledgePoolCreatedAsync("kp-1", CancellationToken.None);
 
 		graph.VerifyAll();
-		Assert.True(db.ExternalGroups.Any());
+		db.ExternalGroups.ShouldNotBeEmpty();
 	}
 
 	[Fact]
@@ -124,10 +125,10 @@ public class M365ConnectorTests
 		var file = new RoxFile("file-42", "Doc.txt") { ContentStream = new MemoryStream([65, 66]) };
 		await sut.HandleKnowledgePoolFileAddedAsync("kp-99", file, CancellationToken.None);
 
-		Assert.NotNull(captured);
-		Assert.NotNull(captured!.Acl);
-		Assert.Contains(captured!.Properties!.AdditionalData!, kv => kv.Key == "title" && (string)kv.Value == "Doc.txt");
-		Assert.True(db.ExternalFiles.Any(f => f.RoxFileId == "file-42"));
+		captured.ShouldNotBeNull();
+		captured.Acl.ShouldNotBeNull();
+		captured.Properties.ShouldNotBeNull().AdditionalData.ShouldNotBeNull().ShouldContain(kv => kv.Key == "title" && (string)kv.Value == "Doc.txt");
+		db.ExternalFiles.ShouldContain(f => f.RoxFileId == "file-42");
 	}
 
 	[Fact]
@@ -169,11 +170,11 @@ public class M365ConnectorTests
 		var file = new RoxFile("file-98", "Doc.txt") { ContentStream = new MemoryStream([65, 66]) };
 		await sut.HandleKnowledgePoolFileAddedAsync("kp-98", file, CancellationToken.None);
 
-		Assert.NotNull(patched);
-		Assert.NotNull(patched!.Acl);
-		Assert.Contains(patched!.Acl!, a => a.Value == "existing-group");
-		Assert.Contains(patched!.Acl!, a => a.Value == "roXtraKpkp98");
-		Assert.DoesNotContain(patched!.Acl!, a => a.Type == AclType.Everyone);
+		patched.ShouldNotBeNull();
+		patched.Acl.ShouldNotBeNull();
+		patched.Acl.ShouldContain(a => a.Value == "existing-group");
+		patched.Acl.ShouldContain(a => a.Value == "roXtraKpkp98");
+		patched.Acl.ShouldNotContain(a => a.Type == AclType.Everyone);
 	}
 
 	[Fact]
@@ -237,10 +238,10 @@ public class M365ConnectorTests
 		var file = new RoxFile("file-55", "Doc55.txt") { ContentStream = new MemoryStream([1, 2]) };
 		await sut.HandleKnowledgePoolFileAddedAsync("kp-55", file, CancellationToken.None);
 
-		Assert.NotNull(created);
-		Assert.NotNull(created!.Acl);
-		Assert.DoesNotContain(created!.Acl!, a => a.Type == AclType.Everyone);
-		Assert.Contains(created!.Acl!, a => a.Type == AclType.ExternalGroup && a.Value == "roXtraKpkp55");
+		created.ShouldNotBeNull();
+		created.Acl.ShouldNotBeNull();
+		created.Acl.ShouldNotContain(a => a.Type == AclType.Everyone);
+		created.Acl.ShouldContain(a => a.Type == AclType.ExternalGroup && a.Value == "roXtraKpkp55");
 	}
 
 	[Fact]
@@ -286,9 +287,10 @@ public class M365ConnectorTests
 
 		await sut.HandleKnowledgePoolFileRemovedAsync("kp-99", "file-42", CancellationToken.None);
 
-		Assert.NotNull(patched);
-		Assert.Single(patched!.Acl!);
-		Assert.Equal("roXtraKpkp77", patched!.Acl![0].Value);
+		patched.ShouldNotBeNull();
+		patched.Acl.ShouldNotBeNull();
+		patched.Acl.ShouldHaveSingleItem();
+		patched.Acl[0].Value.ShouldBe("roXtraKpkp77");
 	}
 
 	[Fact]
@@ -332,8 +334,8 @@ public class M365ConnectorTests
 
 		await sut.HandleKnowledgePoolFileRemovedAsync("kp-11", "file-99", CancellationToken.None);
 
-		Assert.True(deleted);
-		Assert.False(db.ExternalFiles.Any(f => f.RoxFileId == "file-99"));
+		deleted.ShouldBeTrue();
+		db.ExternalFiles.ShouldNotContain(f => f.RoxFileId == "file-99");
 	}
 
 	[Fact]
@@ -359,8 +361,8 @@ public class M365ConnectorTests
 
 		await sut.HandleKnowledgePoolRemovedAsync("kp-123", CancellationToken.None);
 
-		Assert.True(deleted);
-		Assert.False(db.ExternalGroups.Any(g => g.KnowledgePoolId == "kp-123"));
+		deleted.ShouldBeTrue();
+		db.ExternalGroups.ShouldNotContain(g => g.KnowledgePoolId == "kp-123");
 	}
 
 	[Fact]
@@ -449,12 +451,12 @@ public class M365ConnectorTests
 
 		await sut.HandleKnowledgePoolRemovedAsync("kp-123", CancellationToken.None);
 
-		Assert.True(deletedA);
-		Assert.NotNull(patchedB);
-		Assert.DoesNotContain(patchedB!.Acl!, a => a.Value == "roXtraKpkp123");
-		Assert.True(deletedGroup);
-		Assert.False(db.ExternalFiles.Any(f => f.RoxFileId == "file-a"));
-		Assert.True(db.ExternalFiles.Any(f => f.RoxFileId == "file-b"));
+		deletedA.ShouldBeTrue();
+		patchedB.ShouldNotBeNull();
+		patchedB.Acl.ShouldNotBeNull().ShouldNotContain(a => a.Value == "roXtraKpkp123");
+		deletedGroup.ShouldBeTrue();
+		db.ExternalFiles.ShouldNotContain(f => f.RoxFileId == "file-a");
+		db.ExternalFiles.ShouldContain(f => f.RoxFileId == "file-b");
 	}
 
 	[Fact]
@@ -495,10 +497,10 @@ public class M365ConnectorTests
 		var file = new Roxtra.RoxFile("file-7", "New.pdf") { ContentStream = new MemoryStream([0x25, 0x50]) };
 		await sut.HandleFileUpdatedAsync(file, CancellationToken.None);
 
-		Assert.NotNull(upserted);
+		upserted.ShouldNotBeNull();
 		// For updates, the connector passes only content/properties; Id and Acl are handled by the client
-		Assert.Null(upserted!.Id);
-		Assert.Null(upserted!.Acl);
+		upserted.Id.ShouldBeNull();
+		upserted.Acl.ShouldBeNull();
 	}
 
 	[Fact]
@@ -527,8 +529,8 @@ public class M365ConnectorTests
 		var file = new Roxtra.RoxFile("file-8", "New.pdf") { ContentStream = new MemoryStream([0x25, 0x50]) };
 		await sut.HandleFileUpdatedAsync(file, CancellationToken.None);
 
-		Assert.NotNull(created);
-		Assert.NotEmpty(created!.Acl!);
-		Assert.Contains(created!.Acl!, a => a.Value == "roXtraKpkp1");
+		created.ShouldNotBeNull();
+		created.Acl.ShouldNotBeNull().ShouldNotBeEmpty();
+		created.Acl.ShouldNotBeNull().ShouldContain(a => a.Value == "roXtraKpkp1");
 	}
 }
