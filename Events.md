@@ -54,63 +54,142 @@ Example payloads
 
 - knowledgepool.created
 
+  ```json
   {
     "type": "knowledgepool.created",
     "knowledgePoolId": "<knowledgePoolId>"
   }
+  ```
 
 - knowledgepool.removed
 
+  ```json
   {
     "type": "knowledgepool.removed",
     "knowledgePoolId": "<knowledgePoolId>"
   }
+  ```
 
 - knowledgepool.member.added
 
+  ```json
   {
     "type": "knowledgepool.member.added",
     "knowledgePoolId": "<knowledgePoolId>",
     "roxtraGroupGid": "<roxtraGroupGuid>",
     "externalGroupId": "<externalGroupId>"
   }
+  ```
 
 - knowledgepool.member.removed
 
+  ```json
   {
     "type": "knowledgepool.member.removed",
     "knowledgePoolId": "<knowledgePoolId>",
     "roxtraGroupGid": "<roxtraGroupGuid>",
     "externalGroupId": "<externalGroupId>"
   }
+  ```
 
 - knowledgepool.file.added
+  - for roXtra version `9.138.0` and later, `downloadUrls` is included in the payload, which contains multiple download URLs for different file formats. `downloadUrl` is still included for backward compatibility. `supportedForKnowledgePools` now represents whether the file is available as PDF for backward compatibility.
 
+  ```json
   {
     "type": "knowledgepool.file.added",
     "fileId": "<roxFileId>",
     "knowledgePoolId": "<knowledgePoolId>",
-    "downloadUrl": "<downloadUrl>",
+    "downloadUrl": "<downloadUrlForPdf>",
+    "downloadUrls": {
+      "pdf": "<downloadUrlForPdf>",
+      "docx": "<downloadUrlForOriginalFile>"
+    },
     "title": "<title>",
-    "documentHash": "<documentHash>", // new in roXtra 9.137.0, not included in legacy payloads
+    "documentHash": "<documentHash>",
     "supportedForKnowledgePools": true
   }
+  ```
+
+  - for roXtra version `9.137.0`, `documentHash` is included in the payload
+
+  ```json
+  {
+    "type": "knowledgepool.file.added",
+    "fileId": "<roxFileId>",
+    "knowledgePoolId": "<knowledgePoolId>",
+    "downloadUrl": "<downloadUrlForPdf>",
+    "title": "<title>",
+    "documentHash": "<documentHash>",
+    "supportedForKnowledgePools": true
+  }
+  ```
+
+  - for roXtra version lower than `9.137.0`
+
+  ```json
+  {
+    "type": "knowledgepool.file.added",
+    "fileId": "<roxFileId>",
+    "knowledgePoolId": "<knowledgePoolId>",
+    "downloadUrl": "<downloadUrlForPdf>",
+    "title": "<title>",
+    "supportedForKnowledgePools": true
+  }
+  ```
 
 - file.updated
+  - for roXtra version `9.138.0` and later, `downloadUrls` is included in the payload, which contains multiple download URLs for different file formats. `downloadUrl` is still included for backward compatibility. `supportedForKnowledgePools` now represents whether the file is available as PDF for backward compatibility.
 
+  ```json
   {
     "type": "file.updated",
     "fileId": "<roxFileId>",
-    "downloadUrl": "<downloadUrl>",
+    "knowledgePoolId": "<knowledgePoolId>",
+    "downloadUrl": "<downloadUrlForPdf>",
+    "downloadUrls": {
+      "pdf": "<downloadUrlForPdf>",
+      "docx": "<downloadUrlForOriginalFile>"
+    },
     "title": "<title>",
-    "documentHash": "<documentHash>", // new in roXtra 9.137.0, not included in legacy payloads
+    "documentHash": "<documentHash>",
     "supportedForKnowledgePools": true
   }
+  ```
+
+  - for roXtra version `9.137.0`, `documentHash` is included in the payload
+
+  ```json
+  {
+    "type": "file.updated",
+    "fileId": "<roxFileId>",
+    "knowledgePoolId": "<knowledgePoolId>",
+    "downloadUrl": "<downloadUrlForPdf>",
+    "title": "<title>",
+    "documentHash": "<documentHash>",
+    "supportedForKnowledgePools": true
+  }
+  ```
+
+  - for roXtra version lower than `9.137.0`
+
+  ```json
+  {
+    "type": "file.updated",
+    "fileId": "<roxFileId>",
+    "knowledgePoolId": "<knowledgePoolId>",
+    "downloadUrl": "<downloadUrlForPdf>",
+    "title": "<title>",
+    "supportedForKnowledgePools": true
+  }
+  ```
 
 - knowledgepool.file.removed
 
+  ```json
   {
     "type": "knowledgepool.file.removed",
     "fileId": "<roxFileId>",
     "knowledgePoolId": "<knowledgePoolId>"
   }
+  ```
