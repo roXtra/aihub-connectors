@@ -93,7 +93,8 @@ Example payloads
   ```
 
 - knowledgepool.file.added
-  - for roXtra version `9.138.0` and later, `downloadUrls` is included in the payload, which contains multiple download URLs for different file formats. `downloadUrl` is still included for backward compatibility. `supportedForKnowledgePools` now represents whether the file is available as PDF for backward compatibility.
+  - for roXtra version `9.138.0` and later, `downloadUrls` is included in the payload. The `downloadUrls` object contains a unique download URL for each file format the document is available in.
+    `downloadUrl` is still included for backward compatibility. `supportedForKnowledgePools` now represents whether the file is available as PDF for backward compatibility.
 
   ```json
   {
@@ -113,7 +114,6 @@ Example payloads
 
   <details>
   <summary>Older payload versions</summary>
-
   - for roXtra version `9.137.0`, `documentHash` is included in the payload
 
   ```json
@@ -144,7 +144,8 @@ Example payloads
   </details>
 
 - file.updated
-  - for roXtra version `9.138.0` and later, `downloadUrls` is included in the payload, which contains multiple download URLs for different file formats. `downloadUrl` is still included for backward compatibility. `supportedForKnowledgePools` now represents whether the file is available as PDF for backward compatibility.
+  - for roXtra version `9.138.0` and later, `downloadUrls` is included in the payload. The `downloadUrls` object contains a unique download URL for each file format the document is available in.
+    `downloadUrl` is still included for backward compatibility. `supportedForKnowledgePools` now represents whether the file is available as PDF for backward compatibility.
 
   ```json
   {
@@ -164,7 +165,6 @@ Example payloads
 
   <details>
   <summary>Older payload versions</summary>
-
   - for roXtra version `9.137.0`, `documentHash` is included in the payload
 
   ```json
