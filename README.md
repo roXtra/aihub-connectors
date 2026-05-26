@@ -4,12 +4,7 @@ This repository demonstrates how to connect roXtra Knowledge Pools to an externa
 
 The included sample targets Microsoft 365 Graph External Connections, but the pattern is generic and easy to adapt to any external system.
 
-The webhook details in this repository reflect roXtra AI Hub with roXtra version 9.137.0.
-
-Earlier behavior:
-- The documentation assumed a fixed webhook path at `POST /api/v1/webhooks/events/receive`.
-- Additional customer-specific headers and query parameters could not be configured.
-- `documentHash` was not sent for `knowledgepool.file.added` and `file.updated`.
+The webhook details in this repository reflect roXtra AI Hub with the latest roXtra version. Older versions of roXtra AI Hub may have different webhook behavior. If you are using an older version of roXtra, please refer to the [Events.md](Events.md) documentation for the specific behavior of your version.
 
 ## How It Works
 
@@ -24,13 +19,14 @@ Earlier behavior:
 ## Bring Your Own Connector
 
 You can implement your own connector that receives webhook events from roXtra AI Hub. Key steps are:
-- Implement a webhook endpoint that can receive events from roXtra AI Hub. If you use the default route, the webhook URL is `POST https://<your-webhook-host>/api/v1/webhooks/events/receive`. If you use another route, provide the complete webhook URL to roXtra AI Hub.
+
+- Implement a webhook endpoint that can receive events from roXtra AI Hub. It could look like this: `POST https://<your-webhook-host>/api/v1/webhooks/events/receive`. For custom routes, ensure that your roXtra version is 9.137.0 or later.
 - Parse incoming events and payloads (see [Events.md](Events.md)).
-- Check incoming header `X-Api-Key` for authentication (matches the API key configured in roXtra AI Hub webhook).
+- Check incoming header `X-Api-Key` for authentication (matches the API key configured in roXtra AI Hub).
 - Ensure the webhook endpoint works correctly when roXtra AI Hub sends additional customer-specific headers and query parameters required for integration with the target system.
-- Use the provided `downloadUrl` in file events to download the file content.  
-    It is valid for a specific file for 1 hour and points to your roXtra server. It looks like:  
-    `https://<roxtraBaseUrl>/aihub/files/download?token=<token>` (e.g., `https://example.roxtra.com/roxtra/aihub/files/download?token=<token>`)  
-    Extraction of the token is not required, usage of the full URL is sufficient.
+- Use one of the provided `downloadUrls` in file events to download the file content in the provided format.  
+   It is valid for a specific file for 1 hour and points to your roXtra server. It looks like:  
+   `https://<roxtraBaseUrl>/aihub/files/download?token=<token>&fileExtension=<fileExtension>` (e.g., `https://example.roxtra.com/roxtra/aihub/files/download?token=<token>&fileExtension=pdf`)  
+   Extraction of the token is not required, usage of the full URL is sufficient.
 - Implement logic to push content and permissions to your target system based on the events.
 - Host the webhook endpoint accessible from your roXtra server.
