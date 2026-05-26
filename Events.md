@@ -1,8 +1,6 @@
 # Webhook Events
 
-The following webhook events reflect roXtra AI Hub with roXtra version 9.137.0. roXtra AI Hub should be configured with the complete webhook URL if a custom route is required. If no explicit route is provided, the default path `POST /api/v1/webhooks/events/receive` is used.  
-roXtra AI Hub can also include additional custom headers and query parameters on webhook calls. The payload examples below focus on the JSON body only.  
-Events related to documents are only sent if the document is released and is either a PDF or contains a PDF attachment. Other document types are ignored.
+The following webhook events reflect roXtra AI Hub with the latest roXtra version. Events related to documents are only sent if the document is released. For older versions of roXtra, the behavior may be different.
 
 ```mermaid
 flowchart LR
@@ -114,6 +112,7 @@ Example payloads
 
   <details>
   <summary>Older payload versions</summary>
+
   - for roXtra version `9.137.0`, `documentHash` is included in the payload
 
   ```json
@@ -165,6 +164,7 @@ Example payloads
 
   <details>
   <summary>Older payload versions</summary>
+
   - for roXtra version `9.137.0`, `documentHash` is included in the payload
 
   ```json
