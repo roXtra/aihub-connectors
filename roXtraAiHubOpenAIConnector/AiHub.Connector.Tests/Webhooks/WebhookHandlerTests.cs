@@ -189,14 +189,6 @@ public class WebhookHandlerTests
 	public async Task FileUpdated_Uses_Payload_Metadata_Even_When_Flag_False()
 	{
 		var handler = CreateHandler(out var external);
-		_ = external
-			.Setup(x =>
-				x.HandleFileUpdatedAsync(
-					It.Is<Roxtra.RoxFile>(f => f.Id == "file-2" && f.Title == "Updated.pdf" && f.ContentStream == null),
-					It.IsAny<CancellationToken>()
-				)
-			)
-			.Returns(Task.CompletedTask);
 
 		var (payload, req) = MakeRequest(
 			"{"
@@ -207,7 +199,14 @@ public class WebhookHandlerTests
 
 		var result = await handler.HandleAsync(payload, req, CancellationToken.None);
 
-		external.VerifyAll();
+		external.Verify(
+			x =>
+				x.HandleFileUpdatedAsync(
+					It.Is<Roxtra.RoxFile>(f => f.Id == "file-2" && f.Title == "Updated.pdf" && f.ContentStream == null),
+					It.IsAny<CancellationToken>()
+				),
+			Times.Never()
+		);
 		Assert.NotNull(result);
 	}
 
