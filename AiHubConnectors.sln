@@ -1,11 +1,14 @@
-
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.14.36414.22
+# Visual Studio Version 18
+VisualStudioVersion = 18.2.11415.280 d18.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AiHub.Connector", "roXtraAiHubM365Connector\\AiHub.Connector\\AiHub.Connector.csproj", "{F8D7CD94-0376-461F-BD07-180D72474B70}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AiHub.Connector", "roXtraAiHubM365Connector\AiHub.Connector\AiHub.Connector.csproj", "{F8D7CD94-0376-461F-BD07-180D72474B70}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AiHub.Connector.Tests", "roXtraAiHubM365Connector\AiHub.Connector.Tests\AiHub.Connector.Tests.csproj", "{AF02FDE9-32AE-4FFC-A95C-A14015ED24F8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AiHub.Connector.OpenAI", "roXtraAiHubOpenAIConnector\AiHub.Connector\AiHub.Connector.OpenAI.csproj", "{A9F86A9C-24C2-F59A-B44E-02192AC634D9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AiHub.Connector.OpenAI.Tests", "roXtraAiHubOpenAIConnector\AiHub.Connector.Tests\AiHub.Connector.OpenAI.Tests.csproj", "{F92F8099-BF1E-4747-C7A1-9BE7818AF329}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -41,6 +44,30 @@ Global
 		{AF02FDE9-32AE-4FFC-A95C-A14015ED24F8}.Release|x64.Build.0 = Release|Any CPU
 		{AF02FDE9-32AE-4FFC-A95C-A14015ED24F8}.Release|x86.ActiveCfg = Release|Any CPU
 		{AF02FDE9-32AE-4FFC-A95C-A14015ED24F8}.Release|x86.Build.0 = Release|Any CPU
+		{A9F86A9C-24C2-F59A-B44E-02192AC634D9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A9F86A9C-24C2-F59A-B44E-02192AC634D9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A9F86A9C-24C2-F59A-B44E-02192AC634D9}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{A9F86A9C-24C2-F59A-B44E-02192AC634D9}.Debug|x64.Build.0 = Debug|Any CPU
+		{A9F86A9C-24C2-F59A-B44E-02192AC634D9}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{A9F86A9C-24C2-F59A-B44E-02192AC634D9}.Debug|x86.Build.0 = Debug|Any CPU
+		{A9F86A9C-24C2-F59A-B44E-02192AC634D9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A9F86A9C-24C2-F59A-B44E-02192AC634D9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A9F86A9C-24C2-F59A-B44E-02192AC634D9}.Release|x64.ActiveCfg = Release|Any CPU
+		{A9F86A9C-24C2-F59A-B44E-02192AC634D9}.Release|x64.Build.0 = Release|Any CPU
+		{A9F86A9C-24C2-F59A-B44E-02192AC634D9}.Release|x86.ActiveCfg = Release|Any CPU
+		{A9F86A9C-24C2-F59A-B44E-02192AC634D9}.Release|x86.Build.0 = Release|Any CPU
+		{F92F8099-BF1E-4747-C7A1-9BE7818AF329}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F92F8099-BF1E-4747-C7A1-9BE7818AF329}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F92F8099-BF1E-4747-C7A1-9BE7818AF329}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{F92F8099-BF1E-4747-C7A1-9BE7818AF329}.Debug|x64.Build.0 = Debug|Any CPU
+		{F92F8099-BF1E-4747-C7A1-9BE7818AF329}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{F92F8099-BF1E-4747-C7A1-9BE7818AF329}.Debug|x86.Build.0 = Debug|Any CPU
+		{F92F8099-BF1E-4747-C7A1-9BE7818AF329}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F92F8099-BF1E-4747-C7A1-9BE7818AF329}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F92F8099-BF1E-4747-C7A1-9BE7818AF329}.Release|x64.ActiveCfg = Release|Any CPU
+		{F92F8099-BF1E-4747-C7A1-9BE7818AF329}.Release|x64.Build.0 = Release|Any CPU
+		{F92F8099-BF1E-4747-C7A1-9BE7818AF329}.Release|x86.ActiveCfg = Release|Any CPU
+		{F92F8099-BF1E-4747-C7A1-9BE7818AF329}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -49,4 +76,3 @@ Global
 		SolutionGuid = {AA20078A-FE4B-4C96-8B6E-4E2D6B0D8AB2}
 	EndGlobalSection
 EndGlobal
-
