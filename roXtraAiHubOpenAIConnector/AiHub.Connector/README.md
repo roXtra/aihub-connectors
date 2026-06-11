@@ -1,11 +1,13 @@
 # roXtra AI Hub OpenAI Connector - Quick Install
 
 ## Install
+
 - From the extracted release ZIP folder (run PowerShell as Administrator):
   `pwsh -File .\setup.ps1`
 - If the service exists, you'll be prompted to replace it.
 
 ## Configure
+
 - Create `appsettings.Production.json` in the install directory (e.g., `C:\Program Files\roXtraAiHubOpenAIConnector`).
 - Adjust the following values for your environment:
 
@@ -18,14 +20,9 @@
     "RoxtraUrl": "https://your-roxtra/roxtra"
   },
    "OpenAI": {
-   "ApiKey": "REPLACE_ME_WITH_OPEN_AI_KEY",
-   "VectorStoreNamePrefix": "aihub-prod",
-   "WaitForIndexing": false,
-   "ExpirationDays": 30,
-   "ChunkingStrategy": "static",
-   "MaxChunkSizeTokens": 800,
-   "ChunkOverlapTokens": 400
- }
+   "ApiKey": "your-open-ai-key",
+   "VectorStoreNamePrefix": "roXtra-aihub",
+ },
   "ConnectionStrings": {
     "Default": "Data Source=connector.db"
   }
@@ -40,7 +37,7 @@
     "Https": {
       "Url": "https://localhost:5255",
       "Certificate": {
-        "Path": "C\\path\\to\\cert.pfx",
+        "Path": "C:\\path\\to\\cert.pfx",
         "Password": "CHANGE_ME"
       }
     }
@@ -49,12 +46,13 @@
 ```
 
 ## Start
+
 - After saving, start the service: `Start-Service roXtraAiHubOpenAIConnector`.
 - Logs are written to `Logs/roXtraAiHubConnector.log` (under the install directory).
 
 ## Connect roXtra AiHub service
 
-The connection between roXtra AiHub and the external connector is configured by the Roxtra GmbH. To have your knowledge pools synced, please contact roXtra support or your roXtra contact person to set up the connection.  
+The connection between roXtra AiHub and the external connector is configured by the Roxtra GmbH. To have your knowledge pools synced, please contact roXtra support or your roXtra contact person to set up the connection.
 
 When requesting the connection setup, please provide the following details:
 
