@@ -186,7 +186,7 @@ public class WebhookHandlerTests
 	}
 
 	[Fact]
-	public async Task FileUpdated_Uses_Payload_Metadata_Even_When_Flag_False()
+	public async Task FileUpdated_Removes_Old_File_When_Not_Supported_For_Knowledge_Pools()
 	{
 		var handler = CreateHandler(out var external);
 
@@ -205,7 +205,7 @@ public class WebhookHandlerTests
 					It.Is<Roxtra.RoxFile>(f => f.Id == "file-2" && f.Title == "Updated.pdf" && f.ContentStream == null),
 					It.IsAny<CancellationToken>()
 				),
-			Times.Never()
+			Times.Once()
 		);
 		Assert.NotNull(result);
 	}

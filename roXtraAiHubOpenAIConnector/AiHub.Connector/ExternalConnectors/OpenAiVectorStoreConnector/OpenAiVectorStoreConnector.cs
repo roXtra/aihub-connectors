@@ -246,7 +246,7 @@ public sealed class OpenAiVectorStoreConnector : IExternalConnector
 		{
 			_logger.LogError("OpenAI file.updated received without content stream; removing the indexed file and failing. FileId={FileId}", file.Id);
 			await RemoveFileEverywhereAsync(file.Id, cancellationToken).ConfigureAwait(false);
-			throw new InvalidOperationException($"file.updated for '{file.Id}' contained no content stream; the previously indexed file was removed.");
+			return;
 		}
 
 		var existingMapping = await _db.ExternalFiles.FirstOrDefaultAsync(x => x.RoxFileId == file.Id, cancellationToken).ConfigureAwait(false);

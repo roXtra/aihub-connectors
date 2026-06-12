@@ -182,17 +182,7 @@ public class WebhookHandler
 										)
 										.ConfigureAwait(false);
 
-									if (file.ContentStream == null && !evt.SupportedForKnowledgePools)
-									{
-										_logger.LogWarning(
-											"Event indicates file is not supported for knowledge pools and no content stream is available, skipping. FileId={FileId}",
-											evt.FileId
-										);
-									}
-									else
-									{
-										await _connector.HandleFileUpdatedAsync(file, ct).ConfigureAwait(false);
-									}
+									await _connector.HandleFileUpdatedAsync(file, ct).ConfigureAwait(false);
 
 									return Results.Ok(
 										new
