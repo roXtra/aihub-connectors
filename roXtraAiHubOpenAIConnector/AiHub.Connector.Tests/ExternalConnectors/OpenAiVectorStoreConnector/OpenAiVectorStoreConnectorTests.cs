@@ -539,7 +539,7 @@ public class OpenAiVectorStoreConnectorTests
 	}
 
 	[Fact]
-	public async Task HandleFileUpdatedAsync_RemovesFileAndThrows_WhenNoContentStream()
+	public async Task HandleFileUpdatedAsync_RemovesFile_WhenNoContentStream()
 	{
 		var (sut, gateway, db) = CreateSut();
 		await using var dbScope = db;
@@ -573,7 +573,7 @@ public class OpenAiVectorStoreConnectorTests
 
 		var file = new RoxFile("rox-1", "doc.txt") { ContentStream = null, DocumentHash = "hash1" };
 
-		await Assert.ThrowsAsync<InvalidOperationException>(() => sut.HandleFileUpdatedAsync(file, CancellationToken.None));
+		await sut.HandleFileUpdatedAsync(file, CancellationToken.None);
 
 		// The indexed file was detached, deleted in OpenAI, and all local records removed.
 		gateway.Verify(g => g.RemoveFileFromVectorStoreAsync("vs_123", "file_old", It.IsAny<CancellationToken>()), Times.Once);
@@ -585,14 +585,14 @@ public class OpenAiVectorStoreConnectorTests
 	}
 
 	[Fact]
-	public async Task HandleFileUpdatedAsync_Throws_WhenNoContentStreamAndNoMapping()
+	public async Task HandleFileUpdatedAsync_DoesNothing_WhenNoContentStreamAndNoMapping()
 	{
 		var (sut, gateway, db) = CreateSut();
 		await using var dbScope = db;
 
 		var file = new RoxFile("rox-1", "doc.txt") { ContentStream = null };
 
-		await Assert.ThrowsAsync<InvalidOperationException>(() => sut.HandleFileUpdatedAsync(file, CancellationToken.None));
+		await sut.HandleFileUpdatedAsync(file, CancellationToken.None);
 
 		// Nothing to delete: no OpenAI calls, no upload.
 		gateway.Verify(g => g.DeleteFileAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
