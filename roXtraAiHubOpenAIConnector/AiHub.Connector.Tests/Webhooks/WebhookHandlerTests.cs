@@ -83,7 +83,7 @@ public class WebhookHandlerTests
 	}
 
 	[Fact]
-	public async Task KnowledgePoolFileAdded_Uses_Payload_And_Calls_M365()
+	public async Task KnowledgePoolFileAdded_Uses_Payload_And_Calls_Connector()
 	{
 		var expected = new byte[] { 9, 8, 7 };
 		var handler = CreateHandler(out var external, out var httpClient, expected);
@@ -114,7 +114,7 @@ public class WebhookHandlerTests
 	}
 
 	[Fact]
-	public async Task KnowledgePoolFileAdded_Uses_Payload_Metadata_Even_When_Flag_False()
+	public async Task KnowledgePoolFileAdded_Calls_Connector_With_Null_ContentStream_When_SupportedForKnowledgePools_False()
 	{
 		var handler = CreateHandler(out var external);
 
@@ -143,7 +143,7 @@ public class WebhookHandlerTests
 	}
 
 	[Fact]
-	public async Task KnowledgePoolCreated_Calls_M365()
+	public async Task KnowledgePoolCreated_Calls_Connector()
 	{
 		var handler = CreateHandler(out var external);
 		_ = external.Setup(x => x.HandleKnowledgePoolCreatedAsync("kp-777", It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
@@ -157,7 +157,7 @@ public class WebhookHandlerTests
 	}
 
 	[Fact]
-	public async Task FileUpdated_Uses_Payload_And_Calls_M365()
+	public async Task FileUpdated_Uses_Payload_And_Calls_Connector()
 	{
 		var expected = new byte[] { 4, 3, 2, 1 };
 		var handler = CreateHandler(out var external, out var httpClient, expected);
@@ -165,7 +165,7 @@ public class WebhookHandlerTests
 		_ = external
 			.Setup(x =>
 				x.HandleFileUpdatedAsync(
-					It.Is<Roxtra.RoxFile>(f => f.Id == "file-2" && f.Title == "Updated.pdf" && f.ContentStream != null),
+					It.Is<RoxFile>(f => f.Id == "file-2" && f.Title == "Updated.pdf" && f.ContentStream != null),
 					It.IsAny<CancellationToken>()
 				)
 			)
@@ -186,7 +186,7 @@ public class WebhookHandlerTests
 	}
 
 	[Fact]
-	public async Task FileUpdated_Removes_Old_File_When_Not_Supported_For_Knowledge_Pools()
+	public async Task FileUpdated_Calls_Connector_With_Null_ContentStream_When_SupportedForKnowledgePools_False()
 	{
 		var handler = CreateHandler(out var external);
 
@@ -202,7 +202,7 @@ public class WebhookHandlerTests
 		external.Verify(
 			x =>
 				x.HandleFileUpdatedAsync(
-					It.Is<Roxtra.RoxFile>(f => f.Id == "file-2" && f.Title == "Updated.pdf" && f.ContentStream == null),
+					It.Is<RoxFile>(f => f.Id == "file-2" && f.Title == "Updated.pdf" && f.ContentStream == null),
 					It.IsAny<CancellationToken>()
 				),
 			Times.Once()
@@ -211,7 +211,7 @@ public class WebhookHandlerTests
 	}
 
 	[Fact]
-	public async Task KnowledgePoolRemoved_Calls_M365()
+	public async Task KnowledgePoolRemoved_Calls_Connector()
 	{
 		var handler = CreateHandler(out var external);
 		_ = external.Setup(x => x.HandleKnowledgePoolRemovedAsync("kp-777", It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
@@ -225,7 +225,7 @@ public class WebhookHandlerTests
 	}
 
 	[Fact]
-	public async Task KnowledgePoolFileRemoved_Calls_M365()
+	public async Task KnowledgePoolFileRemoved_Calls_Connector()
 	{
 		var handler = CreateHandler(out var external);
 		_ = external.Setup(x => x.HandleKnowledgePoolFileRemovedAsync("kp-123", "file-1", It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
@@ -239,12 +239,12 @@ public class WebhookHandlerTests
 	}
 
 	[Fact]
-	public async Task FileAdded_When_External_Fails_Returns_Problem()
+	public async Task FileAdded_When_External_Fails_Returns_Failed_To_Handle_Webhook()
 	{
 		var handler = CreateHandler(out var external);
 		_ = external
 			.Setup(x => x.HandleKnowledgePoolFileAddedAsync("kp-1", It.IsAny<RoxFile>(), It.IsAny<CancellationToken>()))
-			.Throws(new InvalidOperationException("failed"));
+			.Throws(new HttpRequestException("failed to download file"));
 
 		var (payload, req) = MakeRequest(
 			"{"
@@ -255,6 +255,8 @@ public class WebhookHandlerTests
 
 		var result = await handler.HandleAsync(payload, req, CancellationToken.None);
 		Assert.NotNull(result);
+		var statusResult = Assert.IsAssignableFrom<IStatusCodeHttpResult>(result);
+		Assert.Equal(StatusCodes.Status503ServiceUnavailable, statusResult.StatusCode);
 	}
 
 	[Fact]
@@ -298,7 +300,7 @@ public class WebhookHandlerTests
 	}
 
 	[Fact]
-	public async Task KnowledgePoolMemberAdded_Calls_M365()
+	public async Task KnowledgePoolMemberAdded_Calls_Connector()
 	{
 		var handler = CreateHandler(out var external);
 		var groupGid = Guid.NewGuid();
@@ -322,7 +324,7 @@ public class WebhookHandlerTests
 	}
 
 	[Fact]
-	public async Task KnowledgePoolMemberRemoved_Calls_M365()
+	public async Task KnowledgePoolMemberRemoved_Calls_Connector()
 	{
 		var handler = CreateHandler(out var external);
 		var groupGid = Guid.NewGuid();
