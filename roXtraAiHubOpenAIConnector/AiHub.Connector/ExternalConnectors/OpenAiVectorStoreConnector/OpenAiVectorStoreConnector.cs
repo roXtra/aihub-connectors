@@ -375,6 +375,18 @@ public sealed class OpenAiVectorStoreConnector : IExternalConnector
 		var created = await _openAi.CreateVectorStoreAsync(BuildVectorStoreName(knowledgePoolId), ct).ConfigureAwait(false);
 		existing.ExternalGroupId = created.Id;
 		await _db.SaveChangesAsync(ct).ConfigureAwait(false);
+
+		// Reattach all files that were previously associated with this knowledge pool
+		var fileMemberships = await _db.FileKnowledgePools.Where(x => x.KnowledgePoolId == knowledgePoolId).ToListAsync(ct).ConfigureAwait(false);
+		foreach (var membership in fileMemberships)
+		{
+			var fileMapping = await _db.ExternalFiles.FirstOrDefaultAsync(x => x.RoxFileId == membership.RoxFileId, ct).ConfigureAwait(false);
+			if (fileMapping is not null)
+			{
+				await AttachFileToVectorStoreAsync(created.Id, fileMapping.ExternalItemId, ct).ConfigureAwait(false);
+			}
+		}
+
 		return created.Id;
 	}
 

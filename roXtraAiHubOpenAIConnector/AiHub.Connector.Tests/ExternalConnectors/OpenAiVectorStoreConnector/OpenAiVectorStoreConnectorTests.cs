@@ -178,6 +178,41 @@ public class OpenAiVectorStoreConnectorTests
 	}
 
 	[Fact]
+	public async Task HandleKnowledgePoolFileAddedAsync_RestoresMissingVectorStore_AndReattachesExistingFiles()
+	{
+		var (sut, gateway, db) = CreateSut();
+		await using var dbScope = db;
+
+		db.ExternalGroups.Add(new ExternalGroupEntity { KnowledgePoolId = "kp-1", ExternalGroupId = "vs_missing" });
+		db.ExternalFiles.Add(new ExternalFileEntity { RoxFileId = "rox-existing", ExternalItemId = "file_existing" });
+		db.FileKnowledgePools.Add(new FileKnowledgePoolEntity { RoxFileId = "rox-existing", KnowledgePoolId = "kp-1" });
+		await db.SaveChangesAsync();
+
+		var restoredVectorStore = CreateMockVectorStore("vs_restored", "test-kp-1");
+		var uploadedFile = CreateMockOpenAIFile("file_new", "doc.txt");
+		var restoredExistingFile = CreateMockVectorStoreFile("file_existing", VectorStoreFileStatus.Completed);
+		var attachedNewFile = CreateMockVectorStoreFile("file_new", VectorStoreFileStatus.Completed);
+
+		gateway.Setup(g => g.GetVectorStoreAsync("vs_missing", It.IsAny<CancellationToken>())).ReturnsAsync((VectorStore?)null);
+		gateway.Setup(g => g.CreateVectorStoreAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync(restoredVectorStore);
+		gateway.Setup(g => g.UploadFileAsync(It.IsAny<Stream>(), "doc.txt", It.IsAny<CancellationToken>())).ReturnsAsync(uploadedFile);
+		gateway.Setup(g => g.AddFileToVectorStoreAsync("vs_restored", "file_existing", It.IsAny<CancellationToken>())).ReturnsAsync(restoredExistingFile);
+		gateway.Setup(g => g.AddFileToVectorStoreAsync("vs_restored", "file_new", It.IsAny<CancellationToken>())).ReturnsAsync(attachedNewFile);
+
+		var file = new RoxFile("rox-new", "doc.txt") { ContentStream = new MemoryStream([65, 66, 67]) };
+		await sut.HandleKnowledgePoolFileAddedAsync("kp-1", file, CancellationToken.None);
+
+		gateway.Verify(g => g.CreateVectorStoreAsync(It.Is<string>(n => n.StartsWith("test-")), It.IsAny<CancellationToken>()), Times.Once);
+		gateway.Verify(g => g.AddFileToVectorStoreAsync("vs_restored", "file_existing", It.IsAny<CancellationToken>()), Times.Once);
+		gateway.Verify(g => g.AddFileToVectorStoreAsync("vs_restored", "file_new", It.IsAny<CancellationToken>()), Times.Once);
+
+		Assert.Equal("vs_restored", db.ExternalGroups.Single().ExternalGroupId);
+		Assert.Equal(2, db.FileKnowledgePools.Count());
+		Assert.Contains(db.FileKnowledgePools, x => x.RoxFileId == "rox-existing" && x.KnowledgePoolId == "kp-1");
+		Assert.Contains(db.FileKnowledgePools, x => x.RoxFileId == "rox-new" && x.KnowledgePoolId == "kp-1");
+	}
+
+	[Fact]
 	public async Task HandleKnowledgePoolFileAddedAsync_ReusesExistingFile_WhenAlreadyUploaded()
 	{
 		var (sut, gateway, db) = CreateSut();
