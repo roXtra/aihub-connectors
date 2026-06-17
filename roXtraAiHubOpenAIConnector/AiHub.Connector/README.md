@@ -21,8 +21,8 @@
   },
    "OpenAI": {
    "ApiKey": "your-open-ai-key",
-   "VectorStoreNamePrefix": "roXtra-aihub",
- },
+   "VectorStoreNamePrefix": "roXtra-aihub"
+  },
   "ConnectionStrings": {
     "Default": "Data Source=connector.db"
   }
