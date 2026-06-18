@@ -3,7 +3,7 @@ name: Release
 on:
   push:
     tags:
-      - 'v*'
+      - "v*"
 
 permissions:
   contents: write
@@ -22,7 +22,7 @@ jobs:
       - name: Setup .NET SDK
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '10.0.x'
+          dotnet-version: "10.0.x"
           cache: true
           cache-dependency-path: |
             **/*.csproj
@@ -44,7 +44,10 @@ jobs:
         run: dotnet test AiHubConnectors.sln --configuration Release --no-build --no-restore
 
       - name: Derive version from tag
-        run: echo "VERSION=${GITHUB_REF_NAME#v}" >> $GITHUB_ENV
+        id: version
+        run: |
+          echo "VERSION=${GITHUB_REF_NAME#v}" >> $GITHUB_ENV
+          echo "value=${GITHUB_REF_NAME#v}" >> $GITHUB_OUTPUT
 
       - name: Restore runtime assets (win-x64)
         run: dotnet restore roXtraAiHubM365Connector/AiHub.Connector/AiHub.Connector.csproj -r win-x64
@@ -68,13 +71,38 @@ jobs:
           mkdir -p dist package/roXtraAiHubConnector
           cp -a out/win-x64/. package/roXtraAiHubConnector/
           cd package
-          zip -r "../dist/roXtraAiHubConnector-${{ env.VERSION }}-win-x64.zip" "roXtraAiHubConnector"
+          zip -r "../dist/roXtraAiHubConnector-${{ steps.version.outputs.value }}-win-x64.zip" "roXtraAiHubConnector"
+          cd -
+
+      - name: Restore runtime assets for OpenAI connector (win-x64)
+        run: dotnet restore roXtraAiHubOpenAIConnector/AiHub.Connector/AiHub.Connector.OpenAI.csproj -r win-x64
+
+      - name: Build OpenAI connector (win-x64)
+        run: dotnet build roXtraAiHubOpenAIConnector/AiHub.Connector/AiHub.Connector.OpenAI.csproj --configuration Release -r win-x64 --no-restore
+
+      - name: Publish OpenAI connector (win-x64)
+        run: >
+          dotnet publish roXtraAiHubOpenAIConnector/AiHub.Connector/AiHub.Connector.OpenAI.csproj
+          -c Release -r win-x64 --no-build --no-restore
+          -p:PublishSingleFile=true
+          -p:SelfContained=false
+          -p:ContinuousIntegrationBuild=true
+          -p:Version=$VERSION
+          -p:InformationalVersion=${{ github.sha }}
+          -o out/openai-win-x64
+
+      - name: Package OpenAI artifact
+        run: |
+          mkdir -p dist package/roXtraAiHubOpenAIConnector
+          cp -a out/openai-win-x64/. package/roXtraAiHubOpenAIConnector/
+          cd package
+          zip -r "../dist/roXtraAiHubOpenAIConnector-${{ steps.version.outputs.value }}-win-x64.zip" "roXtraAiHubOpenAIConnector"
           cd -
 
       - name: Upload artifact to workflow (for debugging)
         uses: actions/upload-artifact@v4
         with:
-          name: release-win-x64-${{ env.VERSION }}
+          name: release-win-x64-${{ steps.version.outputs.value }}
           path: |
             dist/*.zip
 
