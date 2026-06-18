@@ -61,3 +61,10 @@ nunit-*.xml
 /roXtraAiHubM365Connector/AiHub.Connector/connector.db-shm
 /roXtraAiHubM365Connector/AiHub.Connector/connector.db-wal
 /roXtraAiHubM365Connector/AiHub.Connector/appsettings.Production.json
+
+/roXtraAiHubOpenAIConnector/AiHub.Connector/AiHub.Connector.csproj.user
+/roXtraAiHubOpenAIConnector/AiHub.Connector/appsettings.Development.json
+/roXtraAiHubOpenAIConnector/AiHub.Connector/connector.db
+/roXtraAiHubOpenAIConnector/AiHub.Connector/connector.db-shm
+/roXtraAiHubOpenAIConnector/AiHub.Connector/connector.db-wal
+/roXtraAiHubOpenAIConnector/AiHub.Connector/appsettings.Production.json

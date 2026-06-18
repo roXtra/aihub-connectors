@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 18
+VisualStudioVersion = 18.2.11415.280 d18.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AiHub.Connector.OpenAI", "AiHub.Connector.OpenAI.csproj", "{3DA6A4A0-16AC-859E-E3C9-ECACA1008C4D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AiHub.Connector.OpenAI.Tests", "..\AiHub.Connector.Tests\AiHub.Connector.OpenAI.Tests.csproj", "{D2745248-5B01-4147-D348-CEDFBB88962A}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{3DA6A4A0-16AC-859E-E3C9-ECACA1008C4D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3DA6A4A0-16AC-859E-E3C9-ECACA1008C4D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3DA6A4A0-16AC-859E-E3C9-ECACA1008C4D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3DA6A4A0-16AC-859E-E3C9-ECACA1008C4D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D2745248-5B01-4147-D348-CEDFBB88962A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D2745248-5B01-4147-D348-CEDFBB88962A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D2745248-5B01-4147-D348-CEDFBB88962A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D2745248-5B01-4147-D348-CEDFBB88962A}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {AA20078A-FE4B-4C96-8B6E-4E2D6B0D8AB2}
+	EndGlobalSection
+EndGlobal
