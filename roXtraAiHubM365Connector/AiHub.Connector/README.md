@@ -10,6 +10,10 @@ Earlier behavior:
 - Customer-specific headers and query parameters from roXtra AI Hub could not be configured and therefore could not be sent for compatibility with customer systems.
 - The event payload additions such as `documentHash` were not sent.
 
+## Build From Source
+
+See [BUILD.md](BUILD.md) for the release-aligned build and packaging process.
+
 ## Install
 
 - Install [.NET 10 Hosting Bundle](https://builds.dotnet.microsoft.com/dotnet/aspnetcore/Runtime/10.0.2/dotnet-hosting-10.0.2-win.exe)
