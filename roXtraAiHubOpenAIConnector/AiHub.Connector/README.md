@@ -1,5 +1,9 @@
 # roXtra AI Hub OpenAI Connector - Quick Install
 
+## Build From Source
+
+See [BUILD.md](BUILD.md) for the release-aligned build and packaging process.
+
 ## Install
 
 - From the extracted release ZIP folder (run PowerShell as Administrator):
