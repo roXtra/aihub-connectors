@@ -443,6 +443,11 @@ public sealed class OpenAiVectorStoreConnector : IExternalConnector
 
 		string filename = SanitizeFilename(file.Title);
 
+		if (!filename.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase))
+		{
+			filename += ".pdf";
+		}
+
 		// Two-phase commit: write "Uploading" before the API call so a mid-upload crash leaves a recoverable record.
 		var version = await _db
 			.ExternalFileVersions.FirstOrDefaultAsync(v => v.RoxFileId == file.Id && v.DocumentHash == file.DocumentHash, ct)
