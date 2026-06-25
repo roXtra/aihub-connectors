@@ -153,7 +153,7 @@ public class OpenAiVectorStoreConnectorTests
 		await db.SaveChangesAsync();
 
 		var vectorStore = CreateMockVectorStore("vs_123", "test-kp-1");
-		var openAiFile = CreateMockOpenAIFile("file_abc", "doc.txt");
+		var openAiFile = CreateMockOpenAIFile("file_abc", "doc");
 		var vectorStoreFile = CreateMockVectorStoreFile("file_abc", VectorStoreFileStatus.Completed);
 
 		gateway.Setup(g => g.GetVectorStoreAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync((VectorStore?)null);
@@ -162,10 +162,10 @@ public class OpenAiVectorStoreConnectorTests
 		gateway.Setup(g => g.UploadFileAsync(It.IsAny<Stream>(), It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync(openAiFile);
 		gateway.Setup(g => g.AddFileToVectorStoreAsync("vs_123", "file_abc", It.IsAny<CancellationToken>())).ReturnsAsync(vectorStoreFile);
 
-		var file = new RoxFile("rox-1", "doc.txt") { ContentStream = new MemoryStream([65, 66, 67]) };
+		var file = new RoxFile("rox-1", "doc") { ContentStream = new MemoryStream([65, 66, 67]) };
 		await sut.HandleKnowledgePoolFileAddedAsync("kp-1", file, CancellationToken.None);
 
-		gateway.Verify(g => g.UploadFileAsync(It.IsAny<Stream>(), "doc.txt", It.IsAny<CancellationToken>()), Times.Once);
+		gateway.Verify(g => g.UploadFileAsync(It.IsAny<Stream>(), "doc.pdf", It.IsAny<CancellationToken>()), Times.Once);
 		gateway.Verify(g => g.AddFileToVectorStoreAsync("vs_123", "file_abc", It.IsAny<CancellationToken>()), Times.Once);
 
 		Assert.Single(db.ExternalFiles);
@@ -189,17 +189,17 @@ public class OpenAiVectorStoreConnectorTests
 		await db.SaveChangesAsync();
 
 		var restoredVectorStore = CreateMockVectorStore("vs_restored", "test-kp-1");
-		var uploadedFile = CreateMockOpenAIFile("file_new", "doc.txt");
+		var uploadedFile = CreateMockOpenAIFile("file_new", "doc.pdf");
 		var restoredExistingFile = CreateMockVectorStoreFile("file_existing", VectorStoreFileStatus.Completed);
 		var attachedNewFile = CreateMockVectorStoreFile("file_new", VectorStoreFileStatus.Completed);
 
 		gateway.Setup(g => g.GetVectorStoreAsync("vs_missing", It.IsAny<CancellationToken>())).ReturnsAsync((VectorStore?)null);
 		gateway.Setup(g => g.CreateVectorStoreAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync(restoredVectorStore);
-		gateway.Setup(g => g.UploadFileAsync(It.IsAny<Stream>(), "doc.txt", It.IsAny<CancellationToken>())).ReturnsAsync(uploadedFile);
+		gateway.Setup(g => g.UploadFileAsync(It.IsAny<Stream>(), "doc.pdf", It.IsAny<CancellationToken>())).ReturnsAsync(uploadedFile);
 		gateway.Setup(g => g.AddFileToVectorStoreAsync("vs_restored", "file_existing", It.IsAny<CancellationToken>())).ReturnsAsync(restoredExistingFile);
 		gateway.Setup(g => g.AddFileToVectorStoreAsync("vs_restored", "file_new", It.IsAny<CancellationToken>())).ReturnsAsync(attachedNewFile);
 
-		var file = new RoxFile("rox-new", "doc.txt") { ContentStream = new MemoryStream([65, 66, 67]) };
+		var file = new RoxFile("rox-new", "doc.pdf") { ContentStream = new MemoryStream([65, 66, 67]) };
 		await sut.HandleKnowledgePoolFileAddedAsync("kp-1", file, CancellationToken.None);
 
 		gateway.Verify(g => g.CreateVectorStoreAsync(It.Is<string>(n => n.StartsWith("test-")), It.IsAny<CancellationToken>()), Times.Once);
