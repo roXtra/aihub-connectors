@@ -29,7 +29,7 @@ The architecture is the same across connector implementations: roXtra AI Hub sen
 
 You can implement your own connector that receives webhook events from roXtra AI Hub. Key steps are:
 
-- Implement a webhook endpoint that can receive events from roXtra AI Hub. It could look like this: `POST https://<your-webhook-host>/api/v1/webhooks/events/receive`. For custom routes, ensure that your roXtra version is 9.137.0 or later.
+- Implement a webhook endpoint that can receive events from roXtra AI Hub. It could look like this: `POST https://<your-webhook-host>/api/v1/webhooks/events/receive`.
 - Parse incoming events and payloads (see [Events.md](Events.md)).
 - Check incoming header `X-Api-Key` for authentication (matches the API key configured in roXtra AI Hub).
 - Ensure the webhook endpoint works correctly when roXtra AI Hub sends additional customer-specific headers and query parameters required for integration with the target system.

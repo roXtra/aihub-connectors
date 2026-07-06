@@ -1,14 +1,8 @@
 # roXtra AI Hub M365 Connector - Quick Install
 
-This sample reflects roXtra AI Hub with roXtra version 9.137.0.
+## roXtra Compatibility
 
-Legacy note: if you use the sample connector unchanged, the webhook endpoint remains `POST /api/v1/webhooks/events/receive` as before.
-
-Earlier behavior:
-
-- The sample setup only documented the default webhook path `POST /api/v1/webhooks/events/receive`.
-- Customer-specific headers and query parameters from roXtra AI Hub could not be configured and therefore could not be sent for compatibility with customer systems.
-- The event payload additions such as `documentHash` were not sent.
+The M365 connector is compatible with roXtra version 9.138.0 and later.
 
 ## Build From Source
 
