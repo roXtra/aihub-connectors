@@ -1,5 +1,9 @@
 # roXtra AI Hub OpenAI Connector - Quick Install
 
+## roXtra Compatibility
+
+The OpenAI connector is compatible with roXtra version 9.138.0 and later.
+
 ## Build From Source
 
 See [BUILD.md](BUILD.md) for the release-aligned build and packaging process.
