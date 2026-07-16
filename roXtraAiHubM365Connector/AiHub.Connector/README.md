@@ -25,7 +25,7 @@ See [BUILD.md](BUILD.md) for the release-aligned build and packaging process.
 - Go to `Certificates & secrets`
 - Create a new `Client secret` and copy the value (you'll need it later)
 - Go to `API permissions`
-- Add the following permissions:
+- Add the following application permissions:
   - `ExternalItem.ReadWrite.OwnedBy`
   - `ExternalConnection.ReadWrite.OwnedBy`
 - Click `Grant admin consent for <your-tenant>` and confirm
