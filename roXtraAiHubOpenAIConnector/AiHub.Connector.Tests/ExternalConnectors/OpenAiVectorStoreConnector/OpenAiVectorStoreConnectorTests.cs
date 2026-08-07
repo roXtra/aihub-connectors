@@ -11,6 +11,7 @@ using Microsoft.Extensions.Options;
 using Moq;
 using OpenAI.Files;
 using OpenAI.VectorStores;
+using Shouldly;
 using Xunit;
 using Sut = AiHub.Connector.ExternalConnectors.OpenAiVectorStoreConnector.OpenAiVectorStoreConnector;
 
@@ -84,9 +85,9 @@ public class OpenAiVectorStoreConnectorTests
 		await sut.HandleKnowledgePoolCreatedAsync("kp-1", CancellationToken.None);
 
 		gateway.Verify(g => g.CreateVectorStoreAsync(It.Is<string>(n => n.StartsWith("test-")), It.IsAny<CancellationToken>()), Times.Once);
-		Assert.Single(db.ExternalGroups);
-		Assert.Equal("kp-1", db.ExternalGroups.First().KnowledgePoolId);
-		Assert.Equal("vs_123", db.ExternalGroups.First().ExternalGroupId);
+		db.ExternalGroups.ShouldHaveSingleItem();
+		db.ExternalGroups.First().KnowledgePoolId.ShouldBe("kp-1");
+		db.ExternalGroups.First().ExternalGroupId.ShouldBe("vs_123");
 	}
 
 	[Fact]
@@ -125,7 +126,7 @@ public class OpenAiVectorStoreConnectorTests
 		await sut.HandleKnowledgePoolCreatedAsync("kp-1", CancellationToken.None);
 
 		gateway.Verify(g => g.CreateVectorStoreAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Once);
-		Assert.Equal("vs_new", db.ExternalGroups.First().ExternalGroupId);
+		db.ExternalGroups.First().ExternalGroupId.ShouldBe("vs_new");
 	}
 
 	[Fact]
@@ -134,8 +135,8 @@ public class OpenAiVectorStoreConnectorTests
 		var (sut, _, db) = CreateSut();
 		await using var dbScope = db;
 
-		// ArgumentNullException is a subclass of ArgumentException; use ThrowsAnyAsync to accept either.
-		await Assert.ThrowsAnyAsync<ArgumentException>(() => sut.HandleKnowledgePoolCreatedAsync(null!, CancellationToken.None));
+		// ArgumentNullException is a subclass of ArgumentException, so either is accepted here.
+		await Should.ThrowAsync<ArgumentException>(() => sut.HandleKnowledgePoolCreatedAsync(null!, CancellationToken.None));
 	}
 
 	#endregion
@@ -168,13 +169,13 @@ public class OpenAiVectorStoreConnectorTests
 		gateway.Verify(g => g.UploadFileAsync(It.IsAny<Stream>(), "doc.pdf", It.IsAny<CancellationToken>()), Times.Once);
 		gateway.Verify(g => g.AddFileToVectorStoreAsync("vs_123", "file_abc", It.IsAny<CancellationToken>()), Times.Once);
 
-		Assert.Single(db.ExternalFiles);
-		Assert.Equal("rox-1", db.ExternalFiles.First().RoxFileId);
-		Assert.Equal("file_abc", db.ExternalFiles.First().ExternalItemId);
+		db.ExternalFiles.ShouldHaveSingleItem();
+		db.ExternalFiles.First().RoxFileId.ShouldBe("rox-1");
+		db.ExternalFiles.First().ExternalItemId.ShouldBe("file_abc");
 
-		Assert.Single(db.FileKnowledgePools);
-		Assert.Equal("rox-1", db.FileKnowledgePools.First().RoxFileId);
-		Assert.Equal("kp-1", db.FileKnowledgePools.First().KnowledgePoolId);
+		db.FileKnowledgePools.ShouldHaveSingleItem();
+		db.FileKnowledgePools.First().RoxFileId.ShouldBe("rox-1");
+		db.FileKnowledgePools.First().KnowledgePoolId.ShouldBe("kp-1");
 	}
 
 	[Fact]
@@ -206,10 +207,10 @@ public class OpenAiVectorStoreConnectorTests
 		gateway.Verify(g => g.AddFileToVectorStoreAsync("vs_restored", "file_existing", It.IsAny<CancellationToken>()), Times.Once);
 		gateway.Verify(g => g.AddFileToVectorStoreAsync("vs_restored", "file_new", It.IsAny<CancellationToken>()), Times.Once);
 
-		Assert.Equal("vs_restored", db.ExternalGroups.Single().ExternalGroupId);
-		Assert.Equal(2, db.FileKnowledgePools.Count());
-		Assert.Contains(db.FileKnowledgePools, x => x.RoxFileId == "rox-existing" && x.KnowledgePoolId == "kp-1");
-		Assert.Contains(db.FileKnowledgePools, x => x.RoxFileId == "rox-new" && x.KnowledgePoolId == "kp-1");
+		db.ExternalGroups.Single().ExternalGroupId.ShouldBe("vs_restored");
+		db.FileKnowledgePools.Count().ShouldBe(2);
+		db.FileKnowledgePools.ShouldContain(x => x.RoxFileId == "rox-existing" && x.KnowledgePoolId == "kp-1");
+		db.FileKnowledgePools.ShouldContain(x => x.RoxFileId == "rox-new" && x.KnowledgePoolId == "kp-1");
 	}
 
 	[Fact]
@@ -247,7 +248,7 @@ public class OpenAiVectorStoreConnectorTests
 
 		var file = new RoxFile("rox-1", "doc.txt") { ContentStream = null };
 
-		await Assert.ThrowsAsync<ArgumentException>(() => sut.HandleKnowledgePoolFileAddedAsync("kp-1", file, CancellationToken.None));
+		await Should.ThrowAsync<ArgumentException>(() => sut.HandleKnowledgePoolFileAddedAsync("kp-1", file, CancellationToken.None));
 	}
 
 	[Fact]
@@ -273,7 +274,7 @@ public class OpenAiVectorStoreConnectorTests
 		var file = new RoxFile("rox-1", "doc.txt") { ContentStream = new MemoryStream([65, 66, 67]) };
 		await sut.HandleKnowledgePoolFileAddedAsync("kp-1", file, CancellationToken.None);
 
-		Assert.Single(db.FileKnowledgePools);
+		db.FileKnowledgePools.ShouldHaveSingleItem();
 	}
 
 	[Fact]
@@ -340,7 +341,7 @@ public class OpenAiVectorStoreConnectorTests
 
 		gateway.Verify(g => g.UploadFileAsync(It.IsAny<Stream>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
 		gateway.Verify(g => g.GetFileAsync("file_existing", It.IsAny<CancellationToken>()), Times.Once);
-		Assert.Equal("file_existing", db.ExternalFiles.First().ExternalItemId);
+		db.ExternalFiles.First().ExternalItemId.ShouldBe("file_existing");
 	}
 
 	[Fact]
@@ -376,8 +377,8 @@ public class OpenAiVectorStoreConnectorTests
 		gateway.Verify(g => g.UploadFileAsync(It.IsAny<Stream>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Once);
 
 		var version = db.ExternalFileVersions.First();
-		Assert.Equal(ExternalFileVersionStatus.Uploaded, version.Status);
-		Assert.Equal("file_new", version.ExternalItemId);
+		version.Status.ShouldBe(ExternalFileVersionStatus.Uploaded);
+		version.ExternalItemId.ShouldBe("file_new");
 	}
 
 	#endregion
@@ -407,8 +408,8 @@ public class OpenAiVectorStoreConnectorTests
 		gateway.Verify(g => g.RemoveFileFromVectorStoreAsync("vs_123", "file_abc", It.IsAny<CancellationToken>()), Times.Once);
 		gateway.Verify(g => g.DeleteFileAsync("file_abc", It.IsAny<CancellationToken>()), Times.Once);
 
-		Assert.Empty(db.FileKnowledgePools);
-		Assert.Empty(db.ExternalFiles);
+		db.FileKnowledgePools.ShouldBeEmpty();
+		db.ExternalFiles.ShouldBeEmpty();
 	}
 
 	[Fact]
@@ -435,8 +436,8 @@ public class OpenAiVectorStoreConnectorTests
 		gateway.Verify(g => g.RemoveFileFromVectorStoreAsync("vs_123", "file_abc", It.IsAny<CancellationToken>()), Times.Once);
 		gateway.Verify(g => g.DeleteFileAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
 
-		Assert.Single(db.FileKnowledgePools);
-		Assert.Single(db.ExternalFiles);
+		db.FileKnowledgePools.ShouldHaveSingleItem();
+		db.ExternalFiles.ShouldHaveSingleItem();
 	}
 
 	[Fact]
@@ -481,9 +482,9 @@ public class OpenAiVectorStoreConnectorTests
 		gateway.Verify(g => g.DeleteVectorStoreAsync("vs_123", It.IsAny<CancellationToken>()), Times.Once);
 		gateway.Verify(g => g.DeleteFileAsync("file_abc", It.IsAny<CancellationToken>()), Times.Once);
 
-		Assert.Empty(db.ExternalGroups);
-		Assert.Empty(db.FileKnowledgePools);
-		Assert.Empty(db.ExternalFiles);
+		db.ExternalGroups.ShouldBeEmpty();
+		db.FileKnowledgePools.ShouldBeEmpty();
+		db.ExternalFiles.ShouldBeEmpty();
 	}
 
 	[Fact]
@@ -506,9 +507,9 @@ public class OpenAiVectorStoreConnectorTests
 
 		gateway.Verify(g => g.DeleteFileAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
 
-		Assert.Single(db.ExternalGroups);
-		Assert.Single(db.FileKnowledgePools);
-		Assert.Single(db.ExternalFiles);
+		db.ExternalGroups.ShouldHaveSingleItem();
+		db.FileKnowledgePools.ShouldHaveSingleItem();
+		db.ExternalFiles.ShouldHaveSingleItem();
 	}
 
 	[Fact]
@@ -570,7 +571,7 @@ public class OpenAiVectorStoreConnectorTests
 		gateway.Verify(g => g.AddFileToVectorStoreAsync("vs_456", "file_new", It.IsAny<CancellationToken>()), Times.Once);
 		gateway.Verify(g => g.DeleteFileAsync("file_old", It.IsAny<CancellationToken>()), Times.Once);
 
-		Assert.Equal("file_new", db.ExternalFiles.First().ExternalItemId);
+		db.ExternalFiles.First().ExternalItemId.ShouldBe("file_new");
 	}
 
 	[Fact]
@@ -614,9 +615,9 @@ public class OpenAiVectorStoreConnectorTests
 		gateway.Verify(g => g.RemoveFileFromVectorStoreAsync("vs_123", "file_old", It.IsAny<CancellationToken>()), Times.Once);
 		gateway.Verify(g => g.DeleteFileAsync("file_old", It.IsAny<CancellationToken>()), Times.Once);
 		gateway.Verify(g => g.UploadFileAsync(It.IsAny<Stream>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
-		Assert.Empty(db.ExternalFiles);
-		Assert.Empty(db.FileKnowledgePools);
-		Assert.Empty(db.ExternalFileVersions);
+		db.ExternalFiles.ShouldBeEmpty();
+		db.FileKnowledgePools.ShouldBeEmpty();
+		db.ExternalFileVersions.ShouldBeEmpty();
 	}
 
 	[Fact]
@@ -649,8 +650,8 @@ public class OpenAiVectorStoreConnectorTests
 		await sut.HandleFileUpdatedAsync(file, CancellationToken.None);
 
 		gateway.Verify(g => g.UploadFileAsync(It.IsAny<Stream>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Once);
-		Assert.Single(db.ExternalFiles);
-		Assert.Equal("file_new", db.ExternalFiles.First().ExternalItemId);
+		db.ExternalFiles.ShouldHaveSingleItem();
+		db.ExternalFiles.First().ExternalItemId.ShouldBe("file_new");
 	}
 
 	[Fact]
@@ -717,12 +718,12 @@ public class OpenAiVectorStoreConnectorTests
 		await sut.HandleFileUpdatedAsync(file, CancellationToken.None);
 
 		var oldVersion = db.ExternalFileVersions.First(v => v.DocumentHash == "old_hash");
-		Assert.Equal(ExternalFileVersionStatus.Superseded, oldVersion.Status);
+		oldVersion.Status.ShouldBe(ExternalFileVersionStatus.Superseded);
 
 		// The new version record was created by UploadFileAsync
 		var newVersion = db.ExternalFileVersions.First(v => v.DocumentHash == "new_hash");
-		Assert.Equal(ExternalFileVersionStatus.Uploaded, newVersion.Status);
-		Assert.Equal("file_new", newVersion.ExternalItemId);
+		newVersion.Status.ShouldBe(ExternalFileVersionStatus.Uploaded);
+		newVersion.ExternalItemId.ShouldBe("file_new");
 	}
 
 	#region HandleKnowledgePoolMemberAddedAsync / RemovedAsync Tests
