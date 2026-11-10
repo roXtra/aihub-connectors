@@ -2,6 +2,10 @@
 
 The following webhook events reflect roXtra AI Hub with the latest roXtra version. Events related to documents are only sent if the document is released. For older versions of roXtra, the behavior may be different.
 
+Handle each event atomically: either complete all related changes or leave the system in its previous consistent state. Acknowledge success only after every processing step completes. roXtra AI Hub automatically retries the event when the webhook call returns a non-success response. On failure, roll back or compensate for partial changes and ensure retries are idempotent.
+
+If your connector does not follow this approach, it must handle partial failures, retries, and restoring a consistent state on its own.
+
 ```mermaid
 flowchart LR
     event((knowledgepool.created)) --> createExternalGroup(create external group in connector)
